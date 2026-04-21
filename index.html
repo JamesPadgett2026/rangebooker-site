@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>RangeBooker</title>
+</head>
+<body>
+  <h1>RangeBooker is Live 🚀</h1>
+  <p>Booking system coming soon.</p>
+
+  <button onclick="loadData()">Test API</button>
+  <pre id="output"></pre>
+
+  <script>
+    async function loadData() {
+      try {
+        const res = await fetch('/api/publicdata');
+        const data = await res.json();
+        document.getElementById('output').innerText =
+          JSON.stringify(data, null, 2);
+      } catch (e) {
+        document.getElementById('output').innerText =
+          "API not connected yet (this is expected)";
+      }
+    }
+  </script>
+</body>
+</html>
