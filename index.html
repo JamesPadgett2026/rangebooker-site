@@ -1,27 +1,549 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>RangeBooker</title>
-</head>
-<body>
-  <h1>RangeBooker is Live 🚀</h1>
-  <p>Booking system coming soon.</p>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --bg2: #111827;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #475569;
+      --line: #e2e8f0;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --light: #f8fafc;
+      --success: #166534;
+    }
 
-  <button onclick="loadData()">Test API</button>
-  <pre id="output"></pre>
+    * {
+      box-sizing: border-box;
+    }
 
-  <script>
-    async function loadData() {
-      try {
-        const res = await fetch('/api/publicdata');
-        const data = await res.json();
-        document.getElementById('output').innerText =
-          JSON.stringify(data, null, 2);
-      } catch (e) {
-        document.getElementById('output').innerText =
-          "API not connected yet (this is expected)";
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--light);
+      color: var(--text);
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .topbar {
+      background: linear-gradient(135deg, var(--bg), var(--bg2));
+      color: white;
+      padding: 18px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .topbar-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .nav {
+      display: flex;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
+    .nav a {
+      color: rgba(255,255,255,0.9);
+      font-size: 15px;
+    }
+
+    .nav a:hover {
+      color: white;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 55%, #334155 100%);
+      color: white;
+      padding: 80px 24px 90px 24px;
+    }
+
+    .hero-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 40px;
+      align-items: center;
+    }
+
+    .hero h1 {
+      margin: 0 0 16px 0;
+      font-size: 52px;
+      line-height: 1.05;
+    }
+
+    .hero p {
+      margin: 0 0 24px 0;
+      font-size: 19px;
+      line-height: 1.6;
+      color: rgba(255,255,255,0.88);
+      max-width: 700px;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-top: 28px;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 14px 22px;
+      border-radius: 10px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      transition: 0.2s ease;
+      font-size: 15px;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.1);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.16);
+    }
+
+    .hero-card {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 18px;
+      padding: 26px;
+      backdrop-filter: blur(6px);
+    }
+
+    .hero-card h3 {
+      margin-top: 0;
+      margin-bottom: 18px;
+      font-size: 22px;
+    }
+
+    .hero-card ul {
+      margin: 0;
+      padding-left: 20px;
+      line-height: 1.9;
+      color: rgba(255,255,255,0.92);
+    }
+
+    .section {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 70px 24px;
+    }
+
+    .section-title {
+      font-size: 34px;
+      margin: 0 0 14px 0;
+      text-align: center;
+    }
+
+    .section-subtitle {
+      text-align: center;
+      color: var(--muted);
+      max-width: 760px;
+      margin: 0 auto 42px auto;
+      line-height: 1.7;
+      font-size: 17px;
+    }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+    }
+
+    .card h3 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-size: 22px;
+    }
+
+    .card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+    }
+
+    .step-number {
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      background: var(--accent);
+      color: white;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+
+    .cta-wrap {
+      background: white;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .form-wrap {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+      align-items: start;
+    }
+
+    .info-panel {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 16px;
+      padding: 24px;
+    }
+
+    .info-panel h3 {
+      margin-top: 0;
+      margin-bottom: 12px;
+    }
+
+    .info-panel p,
+    .info-panel li {
+      color: #1e3a8a;
+      line-height: 1.7;
+    }
+
+    .info-panel ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    form {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+    }
+
+    label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 8px;
+      margin-top: 16px;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      padding: 13px 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      font-size: 15px;
+      font-family: inherit;
+    }
+
+    textarea {
+      min-height: 140px;
+      resize: vertical;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    .form-actions {
+      margin-top: 22px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .status {
+      font-size: 14px;
+      color: var(--success);
+      font-weight: 700;
+    }
+
+    .footer {
+      background: #0f172a;
+      color: rgba(255,255,255,0.88);
+      text-align: center;
+      padding: 28px 24px;
+      font-size: 14px;
+    }
+
+    @media (max-width: 900px) {
+      .hero-inner,
+      .features,
+      .steps,
+      .form-wrap {
+        grid-template-columns: 1fr;
+      }
+
+      .hero h1 {
+        font-size: 40px;
+      }
+
+      .topbar-inner {
+        justify-content: center;
+      }
+
+      .nav {
+        justify-content: center;
       }
     }
+
+    @media (max-width: 600px) {
+      .hero {
+        padding-top: 56px;
+        padding-bottom: 64px;
+      }
+
+      .hero h1 {
+        font-size: 34px;
+      }
+
+      .section-title {
+        font-size: 28px;
+      }
+
+      .brand {
+        font-size: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">RangeBooker</div>
+      <nav class="nav">
+        <a href="#features">Features</a>
+        <a href="#how-it-works">How It Works</a>
+        <a href="#request">Request Info</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-inner">
+      <div>
+        <h1>Simple range scheduling and request management.</h1>
+        <p>
+          RangeBooker helps organize range availability, booking requests, and customer communication
+          in one clean place. Built to grow into a full public-facing scheduling system.
+        </p>
+        <div class="hero-buttons">
+          <a class="btn btn-primary" href="#request">Request Information</a>
+          <a class="btn btn-secondary" href="#features">Learn More</a>
+        </div>
+      </div>
+
+      <div class="hero-card">
+        <h3>Coming Soon</h3>
+        <ul>
+          <li>Public booking requests</li>
+          <li>Live availability display</li>
+          <li>Dataverse-powered backend</li>
+          <li>Email confirmations and follow-up</li>
+          <li>Admin management tools</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="features">
+    <h2 class="section-title">Why RangeBooker?</h2>
+    <p class="section-subtitle">
+      A cleaner way to publish useful information, gather customer requests, and eventually support
+      live range scheduling without exposing your internal systems directly.
+    </p>
+
+    <div class="features">
+      <div class="card">
+        <h3>Public-Friendly</h3>
+        <p>
+          Show safe public information on a clean site while keeping your real business data protected
+          behind your backend.
+        </p>
+      </div>
+
+      <div class="card">
+        <h3>Request Intake</h3>
+        <p>
+          Let visitors submit requests, questions, or reservation inquiries even before full online
+          booking is ready.
+        </p>
+      </div>
+
+      <div class="card">
+        <h3>Ready to Grow</h3>
+        <p>
+          Start simple now, then later connect live availability, automated workflows, and Dataverse
+          records as the project expands.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="how-it-works">
+    <h2 class="section-title">How It Works</h2>
+    <p class="section-subtitle">
+      The current version is focused on getting a clean public-facing presence online first, then
+      layering in forms, workflows, and real data.
+    </p>
+
+    <div class="steps">
+      <div class="card">
+        <div class="step-number">1</div>
+        <h3>Visitors View Info</h3>
+        <p>
+          Customers can see your services, availability notes, instructions, and general information
+          from a simple public website.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="step-number">2</div>
+        <h3>They Submit Requests</h3>
+        <p>
+          A request form collects contact details and booking information so your team can review and
+          respond.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="step-number">3</div>
+        <h3>You Manage Internally</h3>
+        <p>
+          Submissions can later flow into Dataverse, email notifications, and internal Power Platform
+          processes.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-wrap" id="request">
+    <div class="section">
+      <h2 class="section-title">Request Information</h2>
+      <p class="section-subtitle">
+        Fill this out and we can use it as your starting public request form. Right now this is a front-end
+        layout. Next, we can connect it to Azure Functions, Dataverse, or email.
+      </p>
+
+      <div class="form-wrap">
+        <div class="info-panel">
+          <h3>Use this as your starter site</h3>
+          <p>
+            This page is designed to look polished now while staying simple enough to update easily.
+          </p>
+          <ul>
+            <li>Works well as a landing page</li>
+            <li>Easy to connect to a backend later</li>
+            <li>Can be customized for your actual range details</li>
+            <li>Good base for pricing, locations, waivers, and scheduling</li>
+          </ul>
+        </div>
+
+        <form id="requestForm">
+          <label for="fullName">Full Name</label>
+          <input type="text" id="fullName" name="fullName" placeholder="Your name" required />
+
+          <label for="email">Email Address</label>
+          <input type="email" id="email" name="email" placeholder="you@example.com" required />
+
+          <label for="requestType">Request Type</label>
+          <select id="requestType" name="requestType">
+            <option>General Question</option>
+            <option>Booking Request</option>
+            <option>Group Event</option>
+            <option>Pricing Request</option>
+          </select>
+
+          <label for="message">Message</label>
+          <textarea id="message" name="message" placeholder="Tell us what you need..."></textarea>
+
+          <div class="form-actions">
+            <button class="btn btn-primary" type="submit">Send Request</button>
+            <span class="status" id="statusText"></span>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    © 2026 RangeBooker. All rights reserved.
+  </footer>
+
+  <script>
+    const form = document.getElementById("requestForm");
+    const statusText = document.getElementById("statusText");
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      statusText.textContent = "Request captured. Backend connection coming next.";
+
+      form.reset();
+    });
   </script>
 </body>
 </html>
