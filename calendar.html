@@ -92,14 +92,28 @@
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
       padding: 16px;
       border-left: 8px solid #d1d5db;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
     }
 
     .day-card.available {
       border-left-color: #16a34a;
+      cursor: pointer;
+    }
+
+    .day-card.available:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
     }
 
     .day-card.booked {
       border-left-color: #dc2626;
+      opacity: 0.92;
+    }
+
+    .card-link {
+      display: block;
+      text-decoration: none;
+      color: inherit;
     }
 
     .date-text {
@@ -130,6 +144,12 @@
     .badge.booked {
       background: #fee2e2;
       color: #991b1b;
+    }
+
+    .hint-text {
+      margin-top: 10px;
+      font-size: 12px;
+      color: #6b7280;
     }
 
     .empty-message {
@@ -185,6 +205,17 @@
       return String(value || '').trim().toLowerCase();
     }
 
+    function buildRequestUrl(item) {
+      const params = new URLSearchParams({
+        date: item.date || '',
+        start: item.start || '',
+        end: item.end || '',
+        status: item.status || ''
+      });
+
+      return `/requestbooking.html?${params.toString()}`;
+    }
+
     async function loadCalendar() {
       const statusEl = document.getElementById('status');
       const calendarEl = document.getElementById('calendar');
@@ -223,14 +254,26 @@
         calendarEl.innerHTML = items.map(item => {
           const status = normalizeStatus(item.status);
           const isAvailable = status === 'available';
+          const requestUrl = buildRequestUrl(item);
+
+          if (isAvailable) {
+            return `
+              <a class="card-link" href="${requestUrl}">
+                <div class="day-card available">
+                  <div class="date-text">${formatDateText(item.date)}</div>
+                  <div class="time-text">${item.start || ''}${item.start && item.end ? ' - ' : ''}${item.end || ''}</div>
+                  <div class="badge available">Available</div>
+                  <div class="hint-text">Click to request this booking</div>
+                </div>
+              </a>
+            `;
+          }
 
           return `
-            <div class="day-card ${isAvailable ? 'available' : 'booked'}">
+            <div class="day-card booked">
               <div class="date-text">${formatDateText(item.date)}</div>
               <div class="time-text">${item.start || ''}${item.start && item.end ? ' - ' : ''}${item.end || ''}</div>
-              <div class="badge ${isAvailable ? 'available' : 'booked'}">
-                ${isAvailable ? 'Available' : 'Booked'}
-              </div>
+              <div class="badge booked">Booked</div>
             </div>
           `;
         }).join('');
