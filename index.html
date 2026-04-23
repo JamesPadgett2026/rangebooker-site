@@ -9,238 +9,210 @@
       font-family: Arial, sans-serif;
       margin: 0;
       padding: 0;
-      background: #f5f7fb;
+      background: linear-gradient(135deg, #eff6ff 0%, #f5f7fb 55%, #e0f2fe 100%);
       color: #1f2937;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .wrap {
+      width: 100%;
       max-width: 1100px;
       margin: 0 auto;
       padding: 24px;
+      box-sizing: border-box;
     }
 
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 16px;
-      margin-bottom: 20px;
+    .hero-card {
+      background: white;
+      border-radius: 24px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.10);
+      padding: 48px 32px;
+      text-align: center;
     }
 
-    .header-left {
-      flex: 1;
-      min-width: 0;
+    .brand {
+      display: inline-block;
+      margin-bottom: 18px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: #dbeafe;
+      color: #1d4ed8;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
     }
 
     h1 {
-      margin: 0 0 8px 0;
-      font-size: 32px;
+      margin: 0 0 14px 0;
+      font-size: 42px;
+      line-height: 1.1;
+      color: #111827;
     }
 
     .subtext {
+      max-width: 700px;
+      margin: 0 auto 32px auto;
+      font-size: 18px;
+      line-height: 1.6;
       color: #6b7280;
     }
 
-    .login-link {
-      display: inline-block;
-      background: #2563eb;
-      color: white;
-      padding: 10px 16px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 600;
-      white-space: nowrap;
-    }
-
-    .login-link:hover {
-      background: #1d4ed8;
-    }
-
-    .toolbar {
-      margin-bottom: 20px;
-    }
-
-    button {
-      background: #2563eb;
-      color: white;
-      border: none;
-      padding: 10px 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-
-    button:hover {
-      background: #1d4ed8;
-    }
-
-    #status {
-      margin-bottom: 18px;
-      font-weight: bold;
-    }
-
-    .calendar-grid {
+    .button-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      grid-template-columns: repeat(3, minmax(180px, 1fr));
       gap: 16px;
+      max-width: 760px;
+      margin: 0 auto 32px auto;
     }
 
-    .day-card {
-      background: white;
-      border-radius: 14px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-      padding: 16px;
-      border-left: 8px solid #d1d5db;
-    }
-
-    .day-card.available {
-      border-left-color: #16a34a;
-    }
-
-    .day-card.booked {
-      border-left-color: #dc2626;
-    }
-
-    .date-text {
-      font-size: 18px;
+    .nav-button {
+      display: block;
+      padding: 18px 20px;
+      border-radius: 16px;
+      text-decoration: none;
+      color: white;
+      font-size: 16px;
       font-weight: 700;
-      margin-bottom: 10px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+      box-shadow: 0 10px 22px rgba(37, 99, 235, 0.20);
     }
 
-    .time-text {
-      font-size: 15px;
-      margin-bottom: 12px;
-      color: #374151;
+    .nav-button:hover {
+      transform: translateY(-2px);
     }
 
-    .badge {
-      display: inline-block;
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size: 13px;
-      font-weight: 700;
+    .calendar-button {
+      background: #2563eb;
     }
 
-    .badge.available {
-      background: #dcfce7;
-      color: #166534;
+    .calendar-button:hover {
+      background: #1d4ed8;
     }
 
-    .badge.booked {
-      background: #fee2e2;
-      color: #991b1b;
+    .login-button {
+      background: #059669;
+      box-shadow: 0 10px 22px rgba(5, 150, 105, 0.20);
     }
 
-    .empty-message {
-      background: white;
+    .login-button:hover {
+      background: #047857;
+    }
+
+    .create-button {
+      background: #7c3aed;
+      box-shadow: 0 10px 22px rgba(124, 58, 237, 0.20);
+    }
+
+    .create-button:hover {
+      background: #6d28d9;
+    }
+
+    .info-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(180px, 1fr));
+      gap: 16px;
+      margin-top: 10px;
+    }
+
+    .info-card {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
       padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      text-align: left;
     }
 
-    @media (max-width: 640px) {
-      .header {
-        flex-direction: column;
-        align-items: stretch;
+    .info-card h2 {
+      margin: 0 0 10px 0;
+      font-size: 18px;
+      color: #111827;
+    }
+
+    .info-card p {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.6;
+      color: #6b7280;
+    }
+
+    @media (max-width: 900px) {
+      .button-grid,
+      .info-row {
+        grid-template-columns: 1fr;
       }
 
-      .login-link {
-        text-align: center;
+      .hero-card {
+        padding: 36px 22px;
+      }
+
+      h1 {
+        font-size: 34px;
+      }
+
+      .subtext {
+        font-size: 16px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .wrap {
+        padding: 16px;
+      }
+
+      .hero-card {
+        padding: 28px 18px;
+        border-radius: 18px;
+      }
+
+      h1 {
+        font-size: 28px;
+      }
+
+      .nav-button {
+        font-size: 15px;
+        padding: 16px 18px;
       }
     }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="header">
-      <div class="header-left">
-        <h1>RangeBooker</h1>
-        <div class="subtext">View days and whether they are available.</div>
+    <div class="hero-card">
+      <div class="brand">RangeBooker</div>
+
+      <h1>Welcome to RangeBooker</h1>
+
+      <div class="subtext">
+        Book range time, manage your account, and check calendar availability from one simple place.
       </div>
 
-      <a class="login-link" href="/login.html">Login</a>
-    </div>
+      <div class="button-grid">
+        <a class="nav-button calendar-button" href="/calendar.html">View Calendar</a>
+        <a class="nav-button login-button" href="/login.html">Login</a>
+        <a class="nav-button create-button" href="/createaccount.html">Create Account</a>
+      </div>
 
-    <div class="toolbar">
-      <button onclick="loadCalendar()">Load Calendar</button>
-    </div>
+      <div class="info-row">
+        <div class="info-card">
+          <h2>Calendar</h2>
+          <p>See available days and scheduled times for the range.</p>
+        </div>
 
-    <div id="status"></div>
-    <div id="calendar" class="calendar-grid"></div>
+        <div class="info-card">
+          <h2>Login</h2>
+          <p>Sign in to access your member features and future booking tools.</p>
+        </div>
+
+        <div class="info-card">
+          <h2>Create Account</h2>
+          <p>Set up a new member account to get started with RangeBooker.</p>
+        </div>
+      </div>
+    </div>
   </div>
-
-  <script>
-    function formatDateText(dateString) {
-      const date = new Date(dateString);
-      return date.toLocaleDateString('en-US', {
-        weekday: 'long',
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric'
-      });
-    }
-
-    function normalizeStatus(value) {
-      return String(value || '').trim().toLowerCase();
-    }
-
-    async function loadCalendar() {
-      const statusEl = document.getElementById('status');
-      const calendarEl = document.getElementById('calendar');
-
-      statusEl.textContent = 'Loading...';
-      calendarEl.innerHTML = '';
-
-      try {
-        const response = await fetch('/api/GetLocations');
-        const data = await response.json();
-
-        if (!response.ok || !data.success) {
-          statusEl.textContent = 'Could not load calendar data.';
-          calendarEl.innerHTML = `<div class="empty-message"><pre>${JSON.stringify(data, null, 2)}</pre></div>`;
-          return;
-        }
-
-        const items = (data.locations || [])
-          .map(item => ({
-            date: item.fields?.DateTimeToSchedule,
-            start: item.fields?.StartTimeTextColSP,
-            end: item.fields?.EndTimeTextColSP,
-            status: item.fields?.AvailableOrBooked
-          }))
-          .filter(item => item.date && item.status)
-          .sort((a, b) => new Date(a.date) - new Date(b.date));
-
-        if (!items.length) {
-          statusEl.textContent = 'No calendar items found.';
-          calendarEl.innerHTML = `<div class="empty-message">There are no days to display.</div>`;
-          return;
-        }
-
-        statusEl.textContent = `${items.length} day(s) loaded`;
-
-        calendarEl.innerHTML = items.map(item => {
-          const status = normalizeStatus(item.status);
-          const isAvailable = status === 'available';
-
-          return `
-            <div class="day-card ${isAvailable ? 'available' : 'booked'}">
-              <div class="date-text">${formatDateText(item.date)}</div>
-              <div class="time-text">${item.start || ''}${item.start && item.end ? ' - ' : ''}${item.end || ''}</div>
-              <div class="badge ${isAvailable ? 'available' : 'booked'}">
-                ${isAvailable ? 'Available' : 'Booked'}
-              </div>
-            </div>
-          `;
-        }).join('');
-      } catch (error) {
-        statusEl.textContent = 'Error loading calendar.';
-        calendarEl.innerHTML = `<div class="empty-message">${error.message}</div>`;
-      }
-    }
-
-    loadCalendar();
-  </script>
 </body>
 </html>
