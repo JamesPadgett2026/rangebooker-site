@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>RangeBooker Login</title>
+</head>
+<body>
+  <h1>Member Login</h1>
+
+  <form id="loginForm">
+    <div>
+      <label for="login">Email or Username</label>
+      <input id="login" name="login" type="text" required />
+    </div>
+
+    <div>
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" required />
+    </div>
+
+    <button type="submit">Sign In</button>
+  </form>
+
+  <div id="message"></div>
+
+  <script>
+    const form = document.getElementById('loginForm');
+    const message = document.getElementById('message');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      message.textContent = 'Signing in...';
+
+      const login = document.getElementById('login').value.trim();
+      const password = document.getElementById('password').value;
+
+      try {
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include',
+          body: JSON.stringify({ login, password })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          message.textContent = data.error || 'Login failed';
+          return;
+        }
+
+        message.textContent = 'Login successful';
+        window.location.href = '/member-home.html';
+      } catch (err) {
+        message.textContent = 'Unable to sign in right now';
+      }
+    });
+  </script>
+</body>
+</html>
