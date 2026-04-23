@@ -1,1 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Request Booking</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 24px;
+      background: #f5f7fb;
+      color: #1f2937;
+    }
 
+    .wrap {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: white;
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    }
+
+    h1 {
+      margin-top: 0;
+    }
+
+    .selected-box {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 22px;
+    }
+
+    .selected-box div {
+      margin-bottom: 8px;
+    }
+
+    label {
+      display: block;
+      margin: 14px 0 6px;
+      font-weight: 700;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      box-sizing: border-box;
+    }
+
+    textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    button {
+      margin-top: 18px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 12px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 18px;
+      color: #2563eb;
+      text-decoration: none;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="back-link" href="/calendar.html">← Back to calendar</a>
+
+    <div class="card">
+      <h1>Request Booking</h1>
+
+      <div class="selected-box">
+        <div><strong>Date:</strong> <span id="selectedDate"></span></div>
+        <div><strong>Start:</strong> <span id="selectedStart"></span></div>
+        <div><strong>End:</strong> <span id="selectedEnd"></span></div>
+        <div><strong>Status:</strong> <span id="selectedStatus"></span></div>
+      </div>
+
+      <form>
+        <label for="name">Your Name</label>
+        <input id="name" type="text" />
+
+        <label for="email">Your Email</label>
+        <input id="email" type="email" />
+
+        <label for="notes">Notes</label>
+        <textarea id="notes"></textarea>
+
+        <button type="submit">Submit Request</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function formatDateText(dateString) {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    }
+
+    const params = new URLSearchParams(window.location.search);
+
+    const date = params.get('date') || '';
+    const start = params.get('start') || '';
+    const end = params.get('end') || '';
+    const status = params.get('status') || '';
+
+    document.getElementById('selectedDate').textContent = formatDateText(date);
+    document.getElementById('selectedStart').textContent = start;
+    document.getElementById('selectedEnd').textContent = end;
+    document.getElementById('selectedStatus').textContent = status;
+  </script>
+</body>
+</html>
