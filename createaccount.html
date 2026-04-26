@@ -181,6 +181,11 @@
       transform: translateY(1px);
     }
 
+    .btn:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+
     .message {
       margin-top: 14px;
       padding: 12px 14px;
@@ -201,6 +206,13 @@
       background: #fee2e2;
       color: #991b1b;
       border: 1px solid #fca5a5;
+    }
+
+    .message.info {
+      display: block;
+      background: #dbeafe;
+      color: #1e40af;
+      border: 1px solid #93c5fd;
     }
 
     .footer-note {
@@ -230,6 +242,7 @@
     }
   </style>
 </head>
+
 <body>
   <div class="page">
     <div class="card">
@@ -251,8 +264,7 @@
       <div class="right">
         <h2>Create Your Account</h2>
         <p class="subtext">
-          This is a demo signup page. Right now it can either show a success message or post
-          to your API once we wire it up.
+          Enter your information below. This page will send the account request to the RangeBooker API.
         </p>
 
         <form id="createAccountForm">
@@ -261,6 +273,7 @@
               <label for="firstName">First Name</label>
               <input id="firstName" name="firstName" type="text" required />
             </div>
+
             <div>
               <label for="lastName">Last Name</label>
               <input id="lastName" name="lastName" type="text" required />
@@ -275,16 +288,18 @@
           <div class="row">
             <div>
               <label for="phone">Phone Number</label>
-              <input id="phone" name="phone" type="tel" />
+              <input id="phone" name="phone" type="tel" placeholder="305-555-1234" />
             </div>
+
             <div>
               <label for="membershipType">Membership Type</label>
-              <select id="membershipType" name="membershipType">
+              <select id="membershipType" name="membershipType" required>
                 <option value="">Select one</option>
-                <option value="Individual">Individual</option>
-                <option value="Family">Family</option>
-                <option value="Guest">Guest</option>
-                <option value="Instructor">Instructor</option>
+                <option value="1">Type 1</option>
+                <option value="2">Type 2</option>
+                <option value="3">Type 3</option>
+                <option value="4">Type 4</option>
+                <option value="5">Type 5</option>
               </select>
             </div>
           </div>
@@ -304,13 +319,13 @@
             <span>I confirm that the information above is correct.</span>
           </label>
 
-          <button class="btn" type="submit">Create Account</button>
+          <button id="submitButton" class="btn" type="submit">Create Account</button>
 
           <div id="message" class="message"></div>
 
           <div class="footer-note">
-            Demo version: for now this can just “show off” the flow. When ready, we connect it
-            to a backend route like <strong>/api/registerMember</strong>.
+            This page posts to <strong>/api/RegisterMember</strong>. The API will later save this to
+            <strong>MemberListSP</strong>.
           </div>
         </form>
       </div>
@@ -320,32 +335,53 @@
   <script>
     const form = document.getElementById("createAccountForm");
     const message = document.getElementById("message");
+    const submitButton = document.getElementById("submitButton");
 
     function showMessage(text, type) {
       message.textContent = text;
       message.className = "message " + type;
     }
 
+    function onlyDigits(value) {
+      return value.replace(/\D/g, "");
+    }
+
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
+
+      const phoneDigits = onlyDigits(document.getElementById("phone").value.trim());
 
       const payload = {
         firstName: document.getElementById("firstName").value.trim(),
         lastName: document.getElementById("lastName").value.trim(),
         email: document.getElementById("email").value.trim(),
-        phone: document.getElementById("phone").value.trim(),
+        phone: phoneDigits,
         membershipType: document.getElementById("membershipType").value,
         password: document.getElementById("password").value,
         notes: document.getElementById("notes").value.trim()
       };
 
-      // DEMO MODE:
-      // Uncomment the fetch block below when your API route is ready.
-      // For now it just shows a success message.
+      if (!payload.firstName || !payload.lastName || !payload.email || !payload.password) {
+        showMessage("Please fill out all required fields.", "error");
+        return;
+      }
 
-      /*
+      if (!payload.membershipType) {
+        showMessage("Please select a membership type.", "error");
+        return;
+      }
+
+      if (payload.phone && payload.phone.length !== 10) {
+        showMessage("Please enter a 10 digit phone number.", "error");
+        return;
+      }
+
+      submitButton.disabled = true;
+      submitButton.textContent = "Creating Account...";
+      showMessage("Sending account request...", "info");
+
       try {
-        const response = await fetch("/api/registerMember", {
+        const response = await fetch("/api/RegisterMember", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
@@ -353,27 +389,27 @@
           body: JSON.stringify(payload)
         });
 
-        const data = await response.json();
+        let data = {};
+
+        try {
+          data = await response.json();
+        } catch (jsonError) {
+          data = {};
+        }
 
         if (!response.ok) {
           showMessage(data.error || "Could not create account.", "error");
           return;
         }
 
-        showMessage("Account created successfully.", "success");
+        showMessage("Account request submitted successfully.", "success");
         form.reset();
       } catch (err) {
-        showMessage("The site could not reach the server.", "error");
+        showMessage("The site could not reach the server. The API may not be created yet.", "error");
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = "Create Account";
       }
-      */
-
-      showMessage(
-        "Demo submission worked. This page is ready to be connected to /api/registerMember.",
-        "success"
-      );
-
-      console.log("Demo payload:", payload);
-      form.reset();
     });
   </script>
 </body>
