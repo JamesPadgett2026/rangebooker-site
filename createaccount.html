@@ -4,16 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>RangeBooker - Create Account</title>
+
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
       font-family: Arial, Helvetica, sans-serif;
       background: linear-gradient(135deg, #0f172a, #1e293b, #334155);
-      color: #111827;
       min-height: 100vh;
     }
 
@@ -30,82 +28,28 @@
       max-width: 920px;
       display: grid;
       grid-template-columns: 1.1fr 1fr;
-      background: #ffffff;
+      background: white;
       border-radius: 18px;
       overflow: hidden;
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.28);
+      box-shadow: 0 25px 60px rgba(0,0,0,0.28);
     }
 
     .left {
-      padding: 42px 38px;
+      padding: 42px;
       background:
-        linear-gradient(rgba(15, 23, 42, 0.84), rgba(15, 23, 42, 0.84)),
-        url("https://images.unsplash.com/photo-1511884642898-4c92249e20b6?auto=format&fit=crop&w=1200&q=80") center/cover no-repeat;
+        linear-gradient(rgba(15,23,42,0.85), rgba(15,23,42,0.85)),
+        url("https://images.unsplash.com/photo-1511884642898-4c92249e20b6?auto=format&fit=crop&w=1200&q=80") center/cover;
       color: white;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
     }
 
-    .brand {
-      font-size: 14px;
-      font-weight: 700;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      opacity: 0.9;
-      margin-bottom: 18px;
-    }
-
-    .left h1 {
-      margin: 0 0 16px 0;
-      font-size: 40px;
-      line-height: 1.05;
-    }
-
-    .left p {
-      margin: 0 0 24px 0;
-      font-size: 16px;
-      line-height: 1.6;
-      color: rgba(255, 255, 255, 0.9);
-    }
-
-    .feature-list {
-      display: grid;
-      gap: 12px;
-      margin-top: 10px;
-    }
-
-    .feature {
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      border-radius: 12px;
-      padding: 12px 14px;
-      font-size: 14px;
-      line-height: 1.5;
-    }
+    .left h1 { margin: 0 0 12px; font-size: 36px; }
 
     .right {
-      padding: 38px 34px;
+      padding: 32px;
       background: #f8fafc;
     }
 
-    .right h2 {
-      margin: 0 0 8px 0;
-      font-size: 28px;
-      color: #0f172a;
-    }
-
-    .subtext {
-      margin: 0 0 26px 0;
-      color: #475569;
-      font-size: 14px;
-      line-height: 1.5;
-    }
-
-    form {
-      display: grid;
-      gap: 14px;
-    }
+    form { display: grid; gap: 14px; }
 
     .row {
       display: grid;
@@ -113,304 +57,144 @@
       gap: 14px;
     }
 
-    label {
-      display: block;
-      margin-bottom: 6px;
-      font-size: 13px;
-      font-weight: 700;
-      color: #334155;
-    }
-
-    input,
-    select,
-    textarea {
+    input, textarea {
       width: 100%;
+      padding: 12px;
+      border-radius: 10px;
       border: 1px solid #cbd5e1;
-      border-radius: 12px;
-      padding: 12px 14px;
-      font-size: 15px;
-      background: white;
-      outline: none;
-      transition: border-color 0.18s ease, box-shadow 0.18s ease;
     }
 
-    input:focus,
-    select:focus,
-    textarea:focus {
-      border-color: #2563eb;
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
-    }
-
-    textarea {
-      min-height: 88px;
-      resize: vertical;
-    }
-
-    .checkbox-row {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      font-size: 14px;
-      color: #475569;
-      margin-top: 2px;
-    }
-
-    .checkbox-row input {
-      width: auto;
-      margin-top: 3px;
-    }
+    textarea { min-height: 80px; }
 
     .btn {
-      margin-top: 6px;
-      border: 0;
       background: #2563eb;
       color: white;
-      border-radius: 12px;
-      padding: 14px 16px;
-      font-size: 15px;
-      font-weight: 700;
+      border: none;
+      padding: 14px;
+      border-radius: 10px;
       cursor: pointer;
-      transition: transform 0.12s ease, opacity 0.12s ease;
-    }
-
-    .btn:hover {
-      opacity: 0.95;
-    }
-
-    .btn:active {
-      transform: translateY(1px);
-    }
-
-    .btn:disabled {
-      opacity: 0.65;
-      cursor: not-allowed;
+      font-weight: bold;
     }
 
     .message {
-      margin-top: 14px;
-      padding: 12px 14px;
-      border-radius: 12px;
-      font-size: 14px;
       display: none;
+      padding: 12px;
+      border-radius: 10px;
     }
 
     .message.success {
       display: block;
       background: #dcfce7;
       color: #166534;
-      border: 1px solid #86efac;
     }
 
     .message.error {
       display: block;
       background: #fee2e2;
       color: #991b1b;
-      border: 1px solid #fca5a5;
     }
 
     .message.info {
       display: block;
       background: #dbeafe;
       color: #1e40af;
-      border: 1px solid #93c5fd;
-    }
-
-    .footer-note {
-      margin-top: 18px;
-      font-size: 12px;
-      color: #64748b;
-      line-height: 1.5;
     }
 
     @media (max-width: 860px) {
-      .card {
-        grid-template-columns: 1fr;
-      }
-
-      .left,
-      .right {
-        padding: 28px 22px;
-      }
-
-      .left h1 {
-        font-size: 32px;
-      }
-
-      .row {
-        grid-template-columns: 1fr;
-      }
+      .card { grid-template-columns: 1fr; }
+      .row { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 
 <body>
-  <div class="page">
-    <div class="card">
-      <div class="left">
-        <div class="brand">RangeBooker</div>
-        <h1>Join the RangeBooker Member Portal</h1>
-        <p>
-          Create an account to request access, manage range bookings, and keep your member
-          information up to date.
-        </p>
+<div class="page">
+  <div class="card">
 
-        <div class="feature-list">
-          <div class="feature">Simple online member signup experience</div>
-          <div class="feature">Future login support for returning members</div>
-          <div class="feature">Can be tied directly to your SharePoint member list</div>
-        </div>
-      </div>
-
-      <div class="right">
-        <h2>Create Your Account</h2>
-        <p class="subtext">
-          Enter your information below. This page will send the account request to the RangeBooker API.
-        </p>
-
-        <form id="createAccountForm">
-          <div class="row">
-            <div>
-              <label for="firstName">First Name</label>
-              <input id="firstName" name="firstName" type="text" required />
-            </div>
-
-            <div>
-              <label for="lastName">Last Name</label>
-              <input id="lastName" name="lastName" type="text" required />
-            </div>
-          </div>
-
-          <div>
-            <label for="email">Email Address</label>
-            <input id="email" name="email" type="email" required />
-          </div>
-
-          <div class="row">
-            <div>
-              <label for="phone">Phone Number</label>
-              <input id="phone" name="phone" type="tel" placeholder="305-555-1234" />
-            </div>
-
-            <div>
-              <label for="membershipType">Membership Type</label>
-              <select id="membershipType" name="membershipType" required>
-                <option value="">Select one</option>
-                <option value="1">Type 1</option>
-                <option value="2">Type 2</option>
-                <option value="3">Type 3</option>
-                <option value="4">Type 4</option>
-                <option value="5">Type 5</option>
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label for="password">Create Password</label>
-            <input id="password" name="password" type="password" minlength="6" required />
-          </div>
-
-          <div>
-            <label for="notes">Notes</label>
-            <textarea id="notes" name="notes" placeholder="Anything you want us to know..."></textarea>
-          </div>
-
-          <label class="checkbox-row">
-            <input id="agree" name="agree" type="checkbox" required />
-            <span>I confirm that the information above is correct.</span>
-          </label>
-
-          <button id="submitButton" class="btn" type="submit">Create Account</button>
-
-          <div id="message" class="message"></div>
-
-          <div class="footer-note">
-            This page posts to <strong>/api/RegisterMember</strong>. The API will later save this to
-            <strong>MemberListSP</strong>.
-          </div>
-        </form>
-      </div>
+    <div class="left">
+      <h1>Join RangeBooker</h1>
+      <p>Create your account to access bookings and member tools.</p>
     </div>
+
+    <div class="right">
+      <h2>Create Account</h2>
+
+      <form id="createAccountForm">
+
+        <div class="row">
+          <input id="firstName" placeholder="First Name" required />
+          <input id="lastName" placeholder="Last Name" required />
+        </div>
+
+        <input id="email" type="email" placeholder="Email" required />
+        <input id="phone" placeholder="Phone (optional)" />
+        <input id="password" type="password" placeholder="Password" required />
+
+        <textarea id="notes" placeholder="Notes (optional)"></textarea>
+
+        <button id="submitButton" class="btn">Create Account</button>
+
+        <div id="message" class="message"></div>
+
+      </form>
+    </div>
+
   </div>
+</div>
 
-  <script>
-    const form = document.getElementById("createAccountForm");
-    const message = document.getElementById("message");
-    const submitButton = document.getElementById("submitButton");
+<script>
+const form = document.getElementById("createAccountForm");
+const message = document.getElementById("message");
+const btn = document.getElementById("submitButton");
 
-    function showMessage(text, type) {
-      message.textContent = text;
-      message.className = "message " + type;
-    }
+function showMessage(text, type) {
+  message.textContent = text;
+  message.className = "message " + type;
+}
 
-    function onlyDigits(value) {
-      return value.replace(/\D/g, "");
-    }
+function onlyDigits(v) {
+  return v.replace(/\D/g, "");
+}
 
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-      const phoneDigits = onlyDigits(document.getElementById("phone").value.trim());
+  const payload = {
+    firstName: document.getElementById("firstName").value.trim(),
+    lastName: document.getElementById("lastName").value.trim(),
+    email: document.getElementById("email").value.trim(),
+    phone: onlyDigits(document.getElementById("phone").value),
+    password: document.getElementById("password").value,
+    notes: document.getElementById("notes").value.trim()
+  };
 
-      const payload = {
-        firstName: document.getElementById("firstName").value.trim(),
-        lastName: document.getElementById("lastName").value.trim(),
-        email: document.getElementById("email").value.trim(),
-        phone: phoneDigits,
-        membershipType: document.getElementById("membershipType").value,
-        password: document.getElementById("password").value,
-        notes: document.getElementById("notes").value.trim()
-      };
+  btn.disabled = true;
+  btn.textContent = "Creating...";
+  showMessage("Sending request...", "info");
 
-      if (!payload.firstName || !payload.lastName || !payload.email || !payload.password) {
-        showMessage("Please fill out all required fields.", "error");
-        return;
-      }
-
-      if (!payload.membershipType) {
-        showMessage("Please select a membership type.", "error");
-        return;
-      }
-
-      if (payload.phone && payload.phone.length !== 10) {
-        showMessage("Please enter a 10 digit phone number.", "error");
-        return;
-      }
-
-      submitButton.disabled = true;
-      submitButton.textContent = "Creating Account...";
-      showMessage("Sending account request...", "info");
-
-      try {
-        const response = await fetch("/api/RegisterMember", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(payload)
-        });
-
-        let data = {};
-
-        try {
-          data = await response.json();
-        } catch (jsonError) {
-          data = {};
-        }
-
-        if (!response.ok) {
-          showMessage(data.error || "Could not create account.", "error");
-          return;
-        }
-
-        showMessage("Account request submitted successfully.", "success");
-        form.reset();
-      } catch (err) {
-        showMessage("The site could not reach the server. The API may not be created yet.", "error");
-      } finally {
-        submitButton.disabled = false;
-        submitButton.textContent = "Create Account";
-      }
+  try {
+    const response = await fetch("/api/RegisterMember", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
     });
-  </script>
+
+    if (!response.ok) {
+      showMessage("Could not create account (API not ready yet).", "error");
+      return;
+    }
+
+    showMessage("Account created!", "success");
+    form.reset();
+
+  } catch (err) {
+    showMessage("Server not reachable (this is expected right now).", "error");
+  }
+
+  btn.disabled = false;
+  btn.textContent = "Create Account";
+});
+</script>
+
 </body>
 </html>
