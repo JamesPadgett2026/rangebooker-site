@@ -42,14 +42,24 @@
       color: white;
     }
 
-    .left h1 { margin: 0 0 12px; font-size: 36px; }
+    .left h1 {
+      margin: 0 0 12px;
+      font-size: 36px;
+    }
+
+    .left p {
+      line-height: 1.5;
+    }
 
     .right {
       padding: 32px;
       background: #f8fafc;
     }
 
-    form { display: grid; gap: 14px; }
+    form {
+      display: grid;
+      gap: 14px;
+    }
 
     .row {
       display: grid;
@@ -57,14 +67,19 @@
       gap: 14px;
     }
 
-    input, textarea {
+    input,
+    textarea {
       width: 100%;
       padding: 12px;
       border-radius: 10px;
       border: 1px solid #cbd5e1;
+      font-size: 15px;
     }
 
-    textarea { min-height: 80px; }
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
 
     .btn {
       background: #2563eb;
@@ -74,30 +89,42 @@
       border-radius: 10px;
       cursor: pointer;
       font-weight: bold;
+      font-size: 15px;
+    }
+
+    .btn:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
     }
 
     .message {
       display: none;
       padding: 12px;
       border-radius: 10px;
+      white-space: pre-wrap;
+      font-size: 14px;
+      line-height: 1.4;
     }
 
     .message.success {
       display: block;
       background: #dcfce7;
       color: #166534;
+      border: 1px solid #86efac;
     }
 
     .message.error {
       display: block;
       background: #fee2e2;
       color: #991b1b;
+      border: 1px solid #fca5a5;
     }
 
     .message.info {
       display: block;
       background: #dbeafe;
       color: #1e40af;
+      border: 1px solid #93c5fd;
     }
 
     @media (max-width: 860px) {
@@ -108,93 +135,108 @@
 </head>
 
 <body>
-<div class="page">
-  <div class="card">
+  <div class="page">
+    <div class="card">
 
-    <div class="left">
-      <h1>Join RangeBooker</h1>
-      <p>Create your account to access bookings and member tools.</p>
+      <div class="left">
+        <h1>Join RangeBooker</h1>
+        <p>Create your account to access bookings and member tools.</p>
+      </div>
+
+      <div class="right">
+        <h2>Create Account</h2>
+
+        <form id="createAccountForm">
+          <div class="row">
+            <input id="firstName" placeholder="First Name" required />
+            <input id="lastName" placeholder="Last Name" required />
+          </div>
+
+          <input id="email" type="email" placeholder="Email" required />
+          <input id="phone" placeholder="Phone (optional)" />
+          <input id="password" type="password" placeholder="Password" required />
+
+          <textarea id="notes" placeholder="Notes (optional)"></textarea>
+
+          <button id="submitButton" class="btn" type="submit">Create Account</button>
+
+          <div id="message" class="message"></div>
+        </form>
+      </div>
+
     </div>
-
-    <div class="right">
-      <h2>Create Account</h2>
-
-      <form id="createAccountForm">
-
-        <div class="row">
-          <input id="firstName" placeholder="First Name" required />
-          <input id="lastName" placeholder="Last Name" required />
-        </div>
-
-        <input id="email" type="email" placeholder="Email" required />
-        <input id="phone" placeholder="Phone (optional)" />
-        <input id="password" type="password" placeholder="Password" required />
-
-        <textarea id="notes" placeholder="Notes (optional)"></textarea>
-
-        <button id="submitButton" class="btn">Create Account</button>
-
-        <div id="message" class="message"></div>
-
-      </form>
-    </div>
-
   </div>
-</div>
 
-<script>
-const form = document.getElementById("createAccountForm");
-const message = document.getElementById("message");
-const btn = document.getElementById("submitButton");
+  <script>
+    const form = document.getElementById("createAccountForm");
+    const message = document.getElementById("message");
+    const btn = document.getElementById("submitButton");
 
-function showMessage(text, type) {
-  message.textContent = text;
-  message.className = "message " + type;
-}
-
-function onlyDigits(v) {
-  return v.replace(/\D/g, "");
-}
-
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-
-  const payload = {
-    firstName: document.getElementById("firstName").value.trim(),
-    lastName: document.getElementById("lastName").value.trim(),
-    email: document.getElementById("email").value.trim(),
-    phone: onlyDigits(document.getElementById("phone").value),
-    password: document.getElementById("password").value,
-    notes: document.getElementById("notes").value.trim()
-  };
-
-  btn.disabled = true;
-  btn.textContent = "Creating...";
-  showMessage("Sending request...", "info");
-
-  try {
-    const response = await fetch("/api/RegisterMember", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-
-    if (!response.ok) {
-      showMessage("Could not create account (API not ready yet).", "error");
-      return;
+    function showMessage(text, type) {
+      message.textContent = text;
+      message.className = "message " + type;
     }
 
-    showMessage("Account created!", "success");
-    form.reset();
+    function onlyDigits(value) {
+      return String(value || "").replace(/\D/g, "");
+    }
 
-  } catch (err) {
-    showMessage("Server not reachable (this is expected right now).", "error");
-  }
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-  btn.disabled = false;
-  btn.textContent = "Create Account";
-});
-</script>
+      const payload = {
+        firstName: document.getElementById("firstName").value.trim(),
+        lastName: document.getElementById("lastName").value.trim(),
+        email: document.getElementById("email").value.trim(),
+        phone: onlyDigits(document.getElementById("phone").value),
+        password: document.getElementById("password").value,
+        notes: document.getElementById("notes").value.trim()
+      };
 
+      btn.disabled = true;
+      btn.textContent = "Creating...";
+      showMessage("Sending request...", "info");
+
+      try {
+        const response = await fetch("/api/RegisterMember", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          let errorText = "Could not create account.";
+
+          try {
+            const errorData = await response.json();
+            errorText = errorData.error || JSON.stringify(errorData, null, 2);
+          } catch (jsonErr) {
+            errorText = await response.text();
+          }
+
+          showMessage(errorText, "error");
+          return;
+        }
+
+        let data = {};
+        try {
+          data = await response.json();
+        } catch (jsonErr) {
+          data = {};
+        }
+
+        showMessage(data.message || "Account created!", "success");
+        form.reset();
+
+      } catch (err) {
+        showMessage("Server not reachable: " + err.message, "error");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Create Account";
+      }
+    });
+  </script>
 </body>
 </html>
