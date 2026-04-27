@@ -171,15 +171,16 @@
     }
   </style>
 </head>
+
 <body>
   <div class="wrap">
     <div class="header">
       <div class="header-left">
         <h1>RangeBooker</h1>
-        <div class="subtext">View days and whether they are available.</div>
+        <div id="welcomeText" class="subtext">View days and whether they are available.</div>
       </div>
 
-      <a class="login-link" href="/login.html">Login</a>
+      <a id="loginBtn" class="login-link" href="/login.html">Logout</a>
     </div>
 
     <div class="toolbar">
@@ -191,44 +192,63 @@
   </div>
 
   <script>
+    const savedUser = sessionStorage.getItem("rangebookerUser");
+
+    if (!savedUser) {
+      window.location.href = "/login.html";
+    }
+
+    const currentUser = JSON.parse(savedUser);
+
+    const welcomeText = document.getElementById("welcomeText");
+    welcomeText.textContent =
+      "Welcome " + (currentUser.firstName || "") + " " + (currentUser.lastName || "") + ". View available range days.";
+
+    const loginBtn = document.getElementById("loginBtn");
+    loginBtn.onclick = function (e) {
+      e.preventDefault();
+      sessionStorage.removeItem("rangebookerUser");
+      window.location.href = "/login.html";
+    };
+
     function formatDateText(dateString) {
       const date = new Date(dateString);
-      return date.toLocaleDateString('en-US', {
-        weekday: 'long',
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric'
+      return date.toLocaleDateString("en-US", {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+        year: "numeric"
       });
     }
 
     function normalizeStatus(value) {
-      return String(value || '').trim().toLowerCase();
+      return String(value || "").trim().toLowerCase();
     }
 
     function buildRequestUrl(item) {
       const params = new URLSearchParams({
-        date: item.date || '',
-        start: item.start || '',
-        end: item.end || '',
-        status: item.status || ''
+        date: item.date || "",
+        start: item.start || "",
+        end: item.end || "",
+        status: item.status || ""
       });
 
       return `/requestbooking.html?${params.toString()}`;
     }
 
     async function loadCalendar() {
-      const statusEl = document.getElementById('status');
-      const calendarEl = document.getElementById('calendar');
+      const statusEl = document.getElementById("status");
+      const calendarEl = document.getElementById("calendar");
 
-      statusEl.textContent = 'Loading...';
-      calendarEl.innerHTML = '';
+      statusEl.textContent = "Loading...";
+      calendarEl.innerHTML = "";
 
       try {
-        const response = await fetch('/api/GetLocations');
+        const response = await fetch("/api/GetLocations");
         const data = await response.json();
 
         if (!response.ok || !data.success) {
-          statusEl.textContent = 'Could not load calendar data.';
+          statusEl.textContent = "Could not load calendar data.";
           calendarEl.innerHTML = `<div class="empty-message"><pre>${JSON.stringify(data, null, 2)}</pre></div>`;
           return;
         }
@@ -244,7 +264,7 @@
           .sort((a, b) => new Date(a.date) - new Date(b.date));
 
         if (!items.length) {
-          statusEl.textContent = 'No calendar items found.';
+          statusEl.textContent = "No calendar items found.";
           calendarEl.innerHTML = `<div class="empty-message">There are no days to display.</div>`;
           return;
         }
@@ -253,7 +273,7 @@
 
         calendarEl.innerHTML = items.map(item => {
           const status = normalizeStatus(item.status);
-          const isAvailable = status === 'available';
+          const isAvailable = status === "available";
           const requestUrl = buildRequestUrl(item);
 
           if (isAvailable) {
@@ -261,7 +281,7 @@
               <a class="card-link" href="${requestUrl}">
                 <div class="day-card available">
                   <div class="date-text">${formatDateText(item.date)}</div>
-                  <div class="time-text">${item.start || ''}${item.start && item.end ? ' - ' : ''}${item.end || ''}</div>
+                  <div class="time-text">${item.start || ""}${item.start && item.end ? " - " : ""}${item.end || ""}</div>
                   <div class="badge available">Available</div>
                   <div class="hint-text">Click to request this booking</div>
                 </div>
@@ -272,13 +292,13 @@
           return `
             <div class="day-card booked">
               <div class="date-text">${formatDateText(item.date)}</div>
-              <div class="time-text">${item.start || ''}${item.start && item.end ? ' - ' : ''}${item.end || ''}</div>
+              <div class="time-text">${item.start || ""}${item.start && item.end ? " - " : ""}${item.end || ""}</div>
               <div class="badge booked">Booked</div>
             </div>
           `;
-        }).join('');
+        }).join("");
       } catch (error) {
-        statusEl.textContent = 'Error loading calendar.';
+        statusEl.textContent = "Error loading calendar.";
         calendarEl.innerHTML = `<div class="empty-message">${error.message}</div>`;
       }
     }
