@@ -1,1 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Member Home</title>
+</head>
 
+<body>
+
+<h1 id="welcome"></h1>
+
+<button onclick="logout()">Logout</button>
+
+<script>
+const user = sessionStorage.getItem("rangebookerUser");
+
+if (!user) {
+  window.location.href = "login.html";
+}
+
+const parsed = JSON.parse(user);
+
+document.getElementById("welcome").innerText =
+  "Welcome " + parsed.firstName + " " + parsed.lastName;
+
+function logout() {
+  sessionStorage.removeItem("rangebookerUser");
+  window.location.href = "login.html";
+}
+</script>
+
+</body>
+</html>
