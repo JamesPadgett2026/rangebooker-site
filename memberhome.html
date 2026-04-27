@@ -12,8 +12,8 @@
     margin: 0;
     font-family: Arial, sans-serif;
     background:
-      linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
-      url("https://images.unsplash.com/photo-1581090700227-1e8a7f36d1d3?auto=format&fit=crop&w=1400&q=80")
+      linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)),
+      url("https://images.unsplash.com/photo-1548438294-1ad5d5f4f063?auto=format&fit=crop&w=1400&q=80")
       center/cover no-repeat;
     min-height: 100vh;
     color: white;
@@ -26,20 +26,26 @@
   }
 
   .card {
-    background: rgba(15, 23, 42, 0.85);
+    background: rgba(15, 23, 42, 0.9);
     border-radius: 16px;
     padding: 30px;
     box-shadow: 0 20px 50px rgba(0,0,0,0.5);
   }
 
-  h1 {
-    margin-top: 0;
-    font-size: 32px;
+  .title {
+    font-size: 34px;
+    font-weight: bold;
+    margin-bottom: 6px;
   }
 
   .sub {
     color: #cbd5f5;
     margin-bottom: 24px;
+  }
+
+  h1 {
+    margin: 0 0 10px 0;
+    font-size: 24px;
   }
 
   .actions {
@@ -90,13 +96,17 @@
 <div class="wrap">
   <div class="card">
 
+    <div class="title">🎯 RangeBooker</div>
+
     <h1 id="welcome"></h1>
-    <div class="sub">Manage your range bookings and availability.</div>
+    <div class="sub">Manage your range access, view availability, and track your activity.</div>
 
     <div class="actions">
-      <a class="btn" href="/calendar
-       .html">📅 View Calendar</a>
-      <a class="btn secondary" href="/requestbooking.html">📝 Request Booking</a>
+      <!-- FIXED calendar link -->
+      <a class="btn" href="/calendar.html">📅 View Calendar</a>
+
+      <!-- NEW stats button -->
+      <a class="btn secondary" href="/mystats.html">📊 My Stats</a>
     </div>
 
     <div class="footer">
