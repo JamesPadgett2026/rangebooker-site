@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Request Booking</title>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -136,7 +137,7 @@
       <label for="notes"><strong>Notes</strong></label>
       <textarea id="notes" placeholder="Optional notes for this request..."></textarea>
 
-      <button id="submitBtn" onclick="submitBookingRequest()">Submit Request</button>
+      <button id="submitBtn" type="button" onclick="submitBookingRequest()">Submit Request</button>
 
       <div id="message" class="message"></div>
     </div>
@@ -153,7 +154,7 @@
 
     const params = new URLSearchParams(window.location.search);
 
-    const date = params.get("date") || "";
+    const rawDate = params.get("date") || "";
     const start = params.get("start") || "";
     const end = params.get("end") || "";
     const status = params.get("status") || "";
@@ -165,22 +166,56 @@
     document.getElementById("memberName").textContent = memberName;
     document.getElementById("memberEmail").textContent = user.email || "";
 
-    document.getElementById("selectedDate").textContent = formatDateText(date);
+    document.getElementById("selectedDate").textContent = formatDisplayDate(rawDate);
     document.getElementById("selectedStart").textContent = start;
     document.getElementById("selectedEnd").textContent = end;
     document.getElementById("selectedStatus").textContent = status;
 
-    function formatDateText(dateString) {
-      if (!dateString) return "";
+    function getDateParts(dateString) {
+      if (!dateString) return null;
+
+      const match = dateString.match(/^(\d{4})-(\d{2})-(\d{2})/);
+
+      if (match) {
+        return {
+          year: Number(match[1]),
+          month: Number(match[2]),
+          day: Number(match[3])
+        };
+      }
 
       const parsedDate = new Date(dateString);
 
-      return parsedDate.toLocaleDateString("en-US", {
+      if (isNaN(parsedDate.getTime())) return null;
+
+      return {
+        year: parsedDate.getFullYear(),
+        month: parsedDate.getMonth() + 1,
+        day: parsedDate.getDate()
+      };
+    }
+
+    function formatDisplayDate(dateString) {
+      const parts = getDateParts(dateString);
+
+      if (!parts) return "";
+
+      const safeDate = new Date(parts.year, parts.month - 1, parts.day, 12, 0, 0);
+
+      return safeDate.toLocaleDateString("en-US", {
         weekday: "long",
         month: "long",
         day: "numeric",
         year: "numeric"
       });
+    }
+
+    function formatDateForSharePoint(dateString) {
+      const parts = getDateParts(dateString);
+
+      if (!parts) return "";
+
+      return parts.month + "/" + parts.day + "/" + parts.year;
     }
 
     function showMessage(text, type) {
@@ -193,7 +228,9 @@
       const submitBtn = document.getElementById("submitBtn");
       const notes = document.getElementById("notes").value.trim();
 
-      if (!date || !dateId) {
+      const cleanDateForSharePoint = formatDateForSharePoint(rawDate);
+
+      if (!cleanDateForSharePoint || !dateId) {
         showMessage(
           "Missing date information. Please go back to the calendar and select the date again.",
           "error"
@@ -205,7 +242,7 @@
         memberId: Number(user.id),
         userLevel: Number(user.memberType || 1),
         memberName: memberName,
-        dateActual: date,
+        dateActual: cleanDateForSharePoint,
         dateId: Number(dateId),
         notes: notes
       };
