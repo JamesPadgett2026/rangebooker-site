@@ -1,139 +1,248 @@
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-
-  const savedUser = sessionStorage.getItem("rangebookerUser");
-
-  if (!savedUser) {
-    window.location.href = "/login.html";
-    return;
-  }
-
-  const user = JSON.parse(savedUser);
-  const params = new URLSearchParams(window.location.search);
-
-  const rawDate = params.get("date") || "";
-  const start = params.get("start") || "";
-  const end = params.get("end") || "";
-  const status = params.get("status") || "";
-  const dateId = params.get("id") || params.get("dateId") || "";
-
-  const memberName =
-    ((user.firstName || "") + " " + (user.lastName || "")).trim();
-
-  document.getElementById("memberName").textContent = memberName;
-  document.getElementById("memberEmail").textContent = user.email || "";
-
-  // ✅ FULL DATE + TIME (matches PowerApps)
-  function formatDateTime(value) {
-    if (!value) return "";
-
-    const d = new Date(value);
-
-    if (isNaN(d.getTime())) return value;
-
-    return d.toLocaleString("en-US", {
-      month: "numeric",
-      day: "numeric",
-      year: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true
-    });
-  }
-
-  // ✅ NICE DISPLAY (long format)
-  function formatDateNice(value) {
-    if (!value) return "";
-
-    const d = new Date(value);
-
-    if (isNaN(d.getTime())) return value;
-
-    return d.toLocaleDateString("en-US", {
-      weekday: "long",
-      month: "long",
-      day: "numeric",
-      year: "numeric"
-    });
-  }
-
-  // ✅ DISPLAY
-  document.getElementById("selectedDate").textContent = formatDateNice(rawDate);
-  document.getElementById("selectedStart").textContent = start;
-  document.getElementById("selectedEnd").textContent = end;
-  document.getElementById("selectedStatus").textContent = status;
-
-  function showMessage(text, type) {
-    const message = document.getElementById("message");
-    message.textContent = text;
-    message.className = "message " + type;
-  }
-
-  // IMPORTANT: expose globally for button click
-  window.submitBookingRequest = async function () {
-    const submitBtn = document.getElementById("submitBtn");
-    const notes = document.getElementById("notes").value.trim();
-
-    if (!rawDate || !dateId) {
-      showMessage(
-        "Missing date information. Please go back to the calendar and select the date again.",
-        "error"
-      );
-      return;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Request Booking</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 24px;
+      background: #f5f7fb;
+      color: #1f2937;
     }
 
-    const parsedDate = new Date(rawDate);
-
-    if (isNaN(parsedDate.getTime())) {
-      showMessage("Invalid date: " + rawDate, "error");
-      return;
+    .wrap {
+      max-width: 760px;
+      margin: 0 auto;
     }
 
-    // ✅ ALWAYS SEND ISO (this is the BIG FIX)
-    const isoDate = parsedDate.toISOString();
+    .card {
+      background: white;
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
 
-    const payload = {
-      memberId: Number(user.id),
-      userLevel: Number(user.memberType || 1),
-      memberName: memberName,
-      dateActual: isoDate,
-      dateId: Number(dateId),
-      notes: notes
-    };
+    h1 {
+      margin-top: 0;
+    }
 
-    submitBtn.disabled = true;
-    submitBtn.textContent = "Submitting...";
-    showMessage("Submitting request...", "info");
+    .selected-box {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 22px;
+    }
 
-    try {
-      const response = await fetch("/api/RequestBooking", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
+    .selected-box div {
+      margin-bottom: 8px;
+    }
+
+    .member-box {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 22px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      box-sizing: border-box;
+      resize: vertical;
+    }
+
+    button {
+      margin-top: 18px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 12px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 18px;
+      color: #2563eb;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .message {
+      margin-top: 16px;
+      padding: 12px;
+      border-radius: 8px;
+      display: none;
+      white-space: pre-wrap;
+    }
+
+    .message.success {
+      display: block;
+      background: #dcfce7;
+      color: #166534;
+      border: 1px solid #86efac;
+    }
+
+    .message.error {
+      display: block;
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fca5a5;
+    }
+
+    .message.info {
+      display: block;
+      background: #dbeafe;
+      color: #1e40af;
+      border: 1px solid #93c5fd;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <a class="back-link" href="/calendar.html">← Back to calendar</a>
+
+    <div class="card">
+      <h1>Request Booking</h1>
+
+      <div class="member-box">
+        <div><strong>Member:</strong> <span id="memberName"></span></div>
+        <div><strong>Email:</strong> <span id="memberEmail"></span></div>
+      </div>
+
+      <div class="selected-box">
+        <div><strong>Date:</strong> <span id="selectedDate"></span></div>
+        <div><strong>Start:</strong> <span id="selectedStart"></span></div>
+        <div><strong>End:</strong> <span id="selectedEnd"></span></div>
+        <div><strong>Status:</strong> <span id="selectedStatus"></span></div>
+      </div>
+
+      <label for="notes"><strong>Notes</strong></label>
+      <textarea id="notes" placeholder="Optional notes for this request..."></textarea>
+
+      <button id="submitBtn" onclick="submitBookingRequest()">Submit Request</button>
+
+      <div id="message" class="message"></div>
+    </div>
+  </div>
+
+  <script>
+    const savedUser = sessionStorage.getItem("rangebookerUser");
+
+    if (!savedUser) {
+      window.location.href = "/login.html";
+    }
+
+    const user = JSON.parse(savedUser);
+
+    const params = new URLSearchParams(window.location.search);
+
+    const date = params.get("date") || "";
+    const start = params.get("start") || "";
+    const end = params.get("end") || "";
+    const status = params.get("status") || "";
+    const dateId = params.get("id") || params.get("dateId") || "";
+
+    const memberName =
+      ((user.firstName || "") + " " + (user.lastName || "")).trim();
+
+    document.getElementById("memberName").textContent = memberName;
+    document.getElementById("memberEmail").textContent = user.email || "";
+
+    document.getElementById("selectedDate").textContent = formatDateText(date);
+    document.getElementById("selectedStart").textContent = start;
+    document.getElementById("selectedEnd").textContent = end;
+    document.getElementById("selectedStatus").textContent = status;
+
+    function formatDateText(dateString) {
+      if (!dateString) return "";
+
+      const parsedDate = new Date(dateString);
+
+      return parsedDate.toLocaleDateString("en-US", {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+        year: "numeric"
       });
+    }
 
-      const data = await response.json();
+    function showMessage(text, type) {
+      const message = document.getElementById("message");
+      message.textContent = text;
+      message.className = "message " + type;
+    }
 
-      if (!response.ok || !data.success) {
-        showMessage(data.error || "Could not submit booking request.", "error");
+    async function submitBookingRequest() {
+      const submitBtn = document.getElementById("submitBtn");
+      const notes = document.getElementById("notes").value.trim();
+
+      if (!date || !dateId) {
+        showMessage(
+          "Missing date information. Please go back to the calendar and select the date again.",
+          "error"
+        );
         return;
       }
 
-      showMessage("Booking request submitted successfully.", "success");
+      const payload = {
+        memberId: Number(user.id),
+        userLevel: Number(user.memberType || 1),
+        memberName: memberName,
+        dateActual: date,
+        dateId: Number(dateId),
+        notes: notes
+      };
 
-      setTimeout(() => {
-        window.location.href = "/calendar.html";
-      }, 1200);
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Submitting...";
+      showMessage("Submitting request...", "info");
 
-    } catch (err) {
-      showMessage("Server error: " + err.message, "error");
-    } finally {
-      submitBtn.disabled = false;
-      submitBtn.textContent = "Submit Request";
+      try {
+        const response = await fetch("/api/RequestBooking", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          showMessage(data.error || "Could not submit booking request.", "error");
+          return;
+        }
+
+        showMessage("Booking request submitted successfully.", "success");
+
+        setTimeout(() => {
+          window.location.href = "/calendar.html";
+        }, 1200);
+
+      } catch (err) {
+        showMessage("Server error: " + err.message, "error");
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Submit Request";
+      }
     }
-  };
-
-});
-</script>
+  </script>
+</body>
+</html>
