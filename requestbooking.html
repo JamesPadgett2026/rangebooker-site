@@ -1,8 +1,10 @@
-
+<script>
+document.addEventListener("DOMContentLoaded", function () {
   const savedUser = sessionStorage.getItem("rangebookerUser");
 
   if (!savedUser) {
     window.location.href = "/login.html";
+    return;
   }
 
   const user = JSON.parse(savedUser);
@@ -20,48 +22,12 @@
   document.getElementById("memberName").textContent = memberName;
   document.getElementById("memberEmail").textContent = user.email || "";
 
-  // ✅ FORMAT FOR DISPLAY (matches PowerApps style)
-  function formatDateTime(value) {
-    if (!value) return "";
-
-    const d = new Date(value);
-
-    return d.toLocaleString("en-US", {
-      month: "numeric",
-      day: "numeric",
-      year: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true
-    });
-  }
-
-  function formatDateOnly(value) {
-    if (!value) return "";
-
-    const d = new Date(value);
-
-    return d.toLocaleDateString("en-US", {
-      weekday: "long",
-      month: "long",
-      day: "numeric",
-      year: "numeric"
-    });
-  }
-
-  // ✅ DISPLAY VALUES (fixed)
   document.getElementById("selectedDate").textContent = formatDateOnly(rawDate);
   document.getElementById("selectedStart").textContent = start;
   document.getElementById("selectedEnd").textContent = end;
   document.getElementById("selectedStatus").textContent = status;
 
-  function showMessage(text, type) {
-    const message = document.getElementById("message");
-    message.textContent = text;
-    message.className = "message " + type;
-  }
-
-  async function submitBookingRequest() {
+  window.submitBookingRequest = async function () {
     const submitBtn = document.getElementById("submitBtn");
     const notes = document.getElementById("notes").value.trim();
 
@@ -73,14 +39,13 @@
       return;
     }
 
-    // ✅ IMPORTANT: always send ISO (clean + consistent for SharePoint)
     const isoDate = new Date(rawDate).toISOString();
 
     const payload = {
       memberId: Number(user.id),
       userLevel: Number(user.memberType || 1),
       memberName: memberName,
-      dateActual: isoDate, // ✅ FIXED
+      dateActual: isoDate,
       dateId: Number(dateId),
       notes: notes
     };
@@ -117,4 +82,27 @@
       submitBtn.disabled = false;
       submitBtn.textContent = "Submit Request";
     }
+  };
+
+  function formatDateOnly(value) {
+    if (!value) return "";
+
+    const d = new Date(value);
+
+    if (isNaN(d.getTime())) return value;
+
+    return d.toLocaleDateString("en-US", {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+      year: "numeric"
+    });
   }
+
+  function showMessage(text, type) {
+    const message = document.getElementById("message");
+    message.textContent = text;
+    message.className = "message " + type;
+  }
+});
+</script>
