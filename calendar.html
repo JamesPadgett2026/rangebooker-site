@@ -227,6 +227,7 @@
 
     function buildRequestUrl(item) {
       const params = new URLSearchParams({
+        id: item.id || "",
         date: item.date || "",
         start: item.start || "",
         end: item.end || "",
@@ -255,12 +256,13 @@
 
         const items = (data.locations || [])
           .map(item => ({
+            id: item.id,
             date: item.fields?.DateTimeToSchedule,
             start: item.fields?.StartTimeTextColSP,
             end: item.fields?.EndTimeTextColSP,
             status: item.fields?.AvailableOrBooked
           }))
-          .filter(item => item.date && item.status)
+          .filter(item => item.id && item.date && item.status)
           .sort((a, b) => new Date(a.date) - new Date(b.date));
 
         if (!items.length) {
