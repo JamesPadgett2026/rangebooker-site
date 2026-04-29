@@ -59,6 +59,15 @@
       background: #1d4ed8;
     }
 
+    .cancel-btn {
+      margin-top: 12px;
+      background: #dc2626;
+    }
+
+    .cancel-btn:hover {
+      background: #b91c1c;
+    }
+
     .toolbar {
       margin-bottom: 20px;
       display: flex;
@@ -252,7 +261,7 @@
 
     const currentUser = JSON.parse(savedUser);
 
-    const memberId = currentUser.id || "";
+    const memberId = currentUser.id || currentUser.ID || currentUser.Id || "";
 
     const memberName =
       `${currentUser.firstName || ""} ${currentUser.lastName || ""}`.trim();
@@ -367,6 +376,50 @@
       });
     }
 
+    async function cancelRequest(requestId) {
+      if (!requestId) {
+        alert("Missing request ID.");
+        return;
+      }
+
+      const confirmed = confirm("Cancel this booking request?");
+
+      if (!confirmed) {
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/DeleteRequest", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            requestId: requestId
+          })
+        });
+
+        let data = {};
+
+        try {
+          data = await response.json();
+        } catch {
+          data = {};
+        }
+
+        if (!response.ok || !data.success) {
+          alert(data.error || "Could not cancel request.");
+          return;
+        }
+
+        alert("Request canceled.");
+        loadCalendar();
+
+      } catch (err) {
+        alert("Server error: " + err.message);
+      }
+    }
+
     async function loadCalendar() {
       const statusEl = document.getElementById("status");
       const calendarEl = document.getElementById("calendar");
@@ -417,7 +470,6 @@
           return;
         }
 
-        const activeRequests = myRequests.filter(r => isBlockingRequest(r.status));
         const requestedCount = myRequests.filter(r => isRequestedStatus(r.status)).length;
         const confirmedCount = myRequests.filter(r => isConfirmedStatus(r.status)).length;
 
@@ -439,6 +491,7 @@
 
           let personalBadge = "";
           let hintText = "";
+          let cancelButton = "";
 
           if (myRequest) {
             if (isConfirmedStatus(myRequest.status)) {
@@ -455,6 +508,12 @@
               cardClass = "requested";
               personalBadge = `<span class="badge requested">Requested by you</span>`;
               hintText = "You have already requested this date.";
+
+              cancelButton = `
+                <button class="cancel-btn" onclick="cancelRequest('${myRequest.id}')">
+                  Cancel Request
+                </button>
+              `;
             }
           } else if (tooCloseRequest && isAvailable) {
             cardClass = "blocked";
@@ -481,6 +540,8 @@
               </div>
 
               <div class="hint-text">${hintText}</div>
+
+              ${cancelButton}
             </div>
           `;
 
