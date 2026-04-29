@@ -17,14 +17,27 @@
     ((user.firstName || "") + " " + (user.lastName || "")).trim().toLowerCase();
 
   async function loadMyRequests() {
+    const container = document.getElementById("myRequestList");
+
     try {
       const res = await fetch("/api/GetPendingRequests");
 
       if (!res.ok) {
-        throw new Error("Could not load pending requests.");
+        throw new Error("API failed: " + res.status + " " + res.statusText);
       }
 
-      const requests = await res.json();
+      const text = await res.text();
+
+      let requests;
+      try {
+        requests = JSON.parse(text);
+      } catch {
+        throw new Error("API did not return JSON. Returned: " + text.substring(0, 200));
+      }
+
+      if (!Array.isArray(requests)) {
+        throw new Error("API returned JSON, but it was not a list/array.");
+      }
 
       const myRequests = requests
         .filter(item => {
@@ -37,8 +50,6 @@
           return new Date(a.DateRequestWasAdded) - new Date(b.DateRequestWasAdded);
         });
 
-      const container = document.getElementById("myRequestList");
-
       if (myRequests.length === 0) {
         container.innerHTML = "<p>You do not have any pending date requests.</p>";
         return;
@@ -46,7 +57,7 @@
 
       container.innerHTML = myRequests.map(item => `
         <div style="padding:12px 0; border-bottom:1px solid #e5e7eb;">
-          <strong>${formatDateOnly(item.RequestedDateColSP || item.DateColSP || item.DateToFilterID || "")}</strong><br>
+          <strong>${item.DateIDLOckInColSP || "Date ID missing"}</strong><br>
           <span>Status: ${item.StatusColSP || "Pending"}</span><br>
           <span>Requested: ${formatDateTime(item.DateRequestWasAdded)}</span>
         </div>
@@ -54,25 +65,11 @@
 
     } catch (err) {
       console.error(err);
-      document.getElementById("myRequestList").innerHTML =
-        "<p>Error loading your requests.</p>";
+      container.innerHTML = `
+        <p><strong>Error loading your requests.</strong></p>
+        <p style="color:#b91c1c;">${err.message}</p>
+      `;
     }
-  }
-
-  function formatDateOnly(value) {
-    if (!value) return "";
-
-    const d = new Date(value);
-
-    if (isNaN(d)) {
-      return value;
-    }
-
-    return d.toLocaleDateString("en-US", {
-      month: "numeric",
-      day: "numeric",
-      year: "numeric"
-    });
   }
 
   function formatDateTime(value) {
