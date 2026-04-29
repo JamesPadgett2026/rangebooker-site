@@ -48,9 +48,39 @@
     margin-bottom: 12px;
     border-radius: 8px;
     border: 1px solid #d1d5db;
+    font-size: 15px;
   }
 
-  button {
+  .password-wrap {
+    position: relative;
+    width: 100%;
+  }
+
+  .password-wrap input {
+    padding-right: 46px;
+  }
+
+  .eye-button {
+    position: absolute;
+    right: 8px;
+    top: 0;
+    width: 38px;
+    height: 42px;
+    padding: 0;
+    background: transparent;
+    color: #374151;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: normal;
+  }
+
+  .eye-button:hover {
+    background: #f3f4f6;
+  }
+
+  button.login-btn {
     width: 100%;
     padding: 12px;
     background: #2563eb;
@@ -62,11 +92,11 @@
     transition: background 0.2s;
   }
 
-  button:hover {
+  button.login-btn:hover {
     background: #1d4ed8;
   }
 
-  button:disabled {
+  button.login-btn:disabled {
     background: #93c5fd;
     cursor: not-allowed;
   }
@@ -103,10 +133,20 @@
   <div class="logo">🎯 RangeBooker</div>
   <div class="subtitle">Reserve your time at the range with ease</div>
 
-  <input id="email" placeholder="Email" />
-  <input id="password" type="password" placeholder="Password" />
+  <input id="email" placeholder="Email" autocomplete="email" />
 
-  <button id="loginButton" onclick="login()">Login</button>
+  <div class="password-wrap">
+    <input id="password" type="password" placeholder="Password" autocomplete="current-password" />
+    <button
+      id="eyeButton"
+      class="eye-button"
+      type="button"
+      title="Hold to show password"
+      aria-label="Hold to show password"
+    >👁</button>
+  </div>
+
+  <button id="loginButton" class="login-btn" onclick="login()">Login</button>
 
   <div id="msg" class="msg"></div>
 
@@ -116,6 +156,34 @@
 </div>
 
 <script>
+const passwordInput = document.getElementById("password");
+const eyeButton = document.getElementById("eyeButton");
+
+function showPassword() {
+  passwordInput.type = "text";
+}
+
+function hidePassword() {
+  passwordInput.type = "password";
+}
+
+eyeButton.addEventListener("mousedown", function (e) {
+  if (e.button === 0) {
+    showPassword();
+  }
+});
+
+eyeButton.addEventListener("mouseup", hidePassword);
+eyeButton.addEventListener("mouseleave", hidePassword);
+
+eyeButton.addEventListener("touchstart", function (e) {
+  e.preventDefault();
+  showPassword();
+});
+
+eyeButton.addEventListener("touchend", hidePassword);
+eyeButton.addEventListener("touchcancel", hidePassword);
+
 async function login() {
   const email = document.getElementById("email").value.trim().toLowerCase();
   const password = document.getElementById("password").value;
@@ -144,13 +212,30 @@ async function login() {
       body: JSON.stringify({ email, password })
     });
 
-    const data = await res.json();
+    let data = {};
+
+    try {
+      data = await res.json();
+    } catch {
+      data = {};
+    }
 
     if (!res.ok || !data.success) {
       const message = data.message || data.error || "Login failed";
+      const lowerMessage = message.toLowerCase();
 
-      if (message.toLowerCase().includes("not been approved")) {
-        msg.textContent = "Your account has not been approved yet. Please wait for admin approval.";
+      if (
+        lowerMessage.includes("membership") ||
+        lowerMessage.includes("not approved") ||
+        lowerMessage.includes("not been approved")
+      ) {
+        msg.textContent = "Your membership request has not been approved yet. Please wait for admin approval.";
+      } else if (
+        lowerMessage.includes("inactive") ||
+        lowerMessage.includes("suspended") ||
+        lowerMessage.includes("active")
+      ) {
+        msg.textContent = "Your account is inactive or suspended. Please contact an administrator.";
       } else {
         msg.textContent = message;
       }
@@ -160,7 +245,16 @@ async function login() {
       return;
     }
 
-    sessionStorage.setItem("rangebookerUser", JSON.stringify(data.user || data.member));
+    const user = data.user || data.member;
+
+    if (!user) {
+      msg.textContent = "Login succeeded, but no user data was returned.";
+      msg.className = "msg error";
+      loginButton.disabled = false;
+      return;
+    }
+
+    sessionStorage.setItem("rangebookerUser", JSON.stringify(user));
 
     msg.textContent = "Login successful!";
     msg.className = "msg success";
