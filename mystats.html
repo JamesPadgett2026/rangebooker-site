@@ -1,94 +1,133 @@
-<div class="card">
-  <h2>My Requested Dates</h2>
-  <div id="myRequestList">Loading...</div>
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Stats</title>
 
-<script>
-  const savedUser = sessionStorage.getItem("rangebookerUser");
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f7fb;
+      margin: 0;
+      padding: 24px;
+      color: #1f2937;
+    }
 
-  if (!savedUser) {
-    window.location.href = "/login.html";
-  }
+    .container {
+      max-width: 700px;
+      margin: 0 auto;
+    }
 
-  const user = JSON.parse(savedUser);
+    .card {
+      background: white;
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
 
-  const loggedInEmail = (user.email || "").toLowerCase();
-  const loggedInName =
-    ((user.firstName || "") + " " + (user.lastName || "")).trim().toLowerCase();
+    h1 {
+      margin-top: 0;
+    }
 
-  async function loadMyRequests() {
-    const container = document.getElementById("myRequestList");
+    .request {
+      padding: 12px 0;
+      border-bottom: 1px solid #e5e7eb;
+    }
 
-    try {
-      const res = await fetch("/api/GetPendingRequests");
+    .status {
+      font-weight: bold;
+    }
 
-      if (!res.ok) {
-        throw new Error("API failed: " + res.status + " " + res.statusText);
+    .pending { color: orange; }
+    .approved { color: green; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="card">
+      <h1>My Requested Dates</h1>
+      <div id="myRequestList">Loading...</div>
+    </div>
+  </div>
+
+  <script>
+    // 🔐 Get logged-in user
+    const savedUser = sessionStorage.getItem("rangebookerUser");
+
+    if (!savedUser) {
+      window.location.href = "/login.html";
+    }
+
+    const user = JSON.parse(savedUser);
+    const loggedInEmail = (user.email || "").toLowerCase();
+
+    // 🔧 FAKE DATA (for testing UI)
+    const requests = [
+      {
+        MemberEmailColSP: loggedInEmail,
+        DateIDLOckInColSP: "2026-05-01",
+        DateRequestWasAdded: "2026-04-28T20:14:00",
+        StatusColSP: "Pending"
+      },
+      {
+        MemberEmailColSP: loggedInEmail,
+        DateIDLOckInColSP: "2026-05-03",
+        DateRequestWasAdded: "2026-04-27T18:10:00",
+        StatusColSP: "Approved"
+      },
+      {
+        MemberEmailColSP: "someoneelse@test.com",
+        DateIDLOckInColSP: "2026-05-04",
+        DateRequestWasAdded: "2026-04-26T10:00:00",
+        StatusColSP: "Pending"
       }
+    ];
 
-      const text = await res.text();
+    function loadMyRequests() {
+      const container = document.getElementById("myRequestList");
 
-      let requests;
-      try {
-        requests = JSON.parse(text);
-      } catch {
-        throw new Error("API did not return JSON. Returned: " + text.substring(0, 200));
-      }
-
-      if (!Array.isArray(requests)) {
-        throw new Error("API returned JSON, but it was not a list/array.");
-      }
-
+      // ✅ FILTER (only logged-in user)
       const myRequests = requests
-        .filter(item => {
-          const requestEmail = (item.MemberEmailColSP || "").toLowerCase();
-          const requestName = (item.MemberNameColSP || "").trim().toLowerCase();
-
-          return requestEmail === loggedInEmail || requestName === loggedInName;
-        })
-        .sort((a, b) => {
-          return new Date(a.DateRequestWasAdded) - new Date(b.DateRequestWasAdded);
-        });
+        .filter(item =>
+          item.MemberEmailColSP.toLowerCase() === loggedInEmail
+        )
+        .sort((a, b) =>
+          new Date(a.DateRequestWasAdded) - new Date(b.DateRequestWasAdded)
+        );
 
       if (myRequests.length === 0) {
         container.innerHTML = "<p>You do not have any pending date requests.</p>";
         return;
       }
 
-      container.innerHTML = myRequests.map(item => `
-        <div style="padding:12px 0; border-bottom:1px solid #e5e7eb;">
-          <strong>${item.DateIDLOckInColSP || "Date ID missing"}</strong><br>
-          <span>Status: ${item.StatusColSP || "Pending"}</span><br>
-          <span>Requested: ${formatDateTime(item.DateRequestWasAdded)}</span>
-        </div>
-      `).join("");
+      // ✅ RENDER
+      container.innerHTML = myRequests.map(item => {
+        const statusClass = item.StatusColSP.toLowerCase();
 
-    } catch (err) {
-      console.error(err);
-      container.innerHTML = `
-        <p><strong>Error loading your requests.</strong></p>
-        <p style="color:#b91c1c;">${err.message}</p>
-      `;
-    }
-  }
-
-  function formatDateTime(value) {
-    if (!value) return "";
-
-    const d = new Date(value);
-
-    if (isNaN(d)) {
-      return value;
+        return `
+          <div class="request">
+            <strong>${formatDate(item.DateIDLOckInColSP)}</strong><br>
+            <span class="status ${statusClass}">${item.StatusColSP}</span><br>
+            <span>Requested: ${formatDateTime(item.DateRequestWasAdded)}</span>
+          </div>
+        `;
+      }).join("");
     }
 
-    return d.toLocaleString("en-US", {
-      month: "numeric",
-      day: "numeric",
-      year: "numeric",
-      hour: "numeric",
-      minute: "2-digit"
-    });
-  }
+    function formatDate(value) {
+      const d = new Date(value);
+      return d.toLocaleDateString("en-US");
+    }
 
-  loadMyRequests();
-</script>
+    function formatDateTime(value) {
+      const d = new Date(value);
+      return d.toLocaleString("en-US");
+    }
+
+    loadMyRequests();
+  </script>
+
+</body>
+</html>
