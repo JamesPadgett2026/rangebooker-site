@@ -1,106 +1,97 @@
-<!DOCTYPE html>
-
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>My Stats</title>
-
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f5f7fb;
-      margin: 0;
-      padding: 24px;
-      color: #1f2937;
-    }
-
-    .container {
-      max-width: 700px;
-      margin: 0 auto;
-    }
-
-    .card {
-      background: white;
-      border-radius: 14px;
-      padding: 24px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-    }
-
-    h1 {
-      margin-top: 0;
-    }
-
-    .row {
-      margin-bottom: 12px;
-      font-size: 16px;
-    }
-
-    .label {
-      font-weight: bold;
-      color: #374151;
-    }
-
-    .value {
-      color: #111827;
-    }
-  </style>
-
-</head>
-<body>
-
-  <div class="container">
-    <div class="card">
-      <h1>My Stats</h1>
-
-```
-  <div class="row">
-    <span class="label">Name:</span>
-    <span class="value" id="name">Loading...</span>
-  </div>
-
-  <div class="row">
-    <span class="label">Email:</span>
-    <span class="value" id="email">Loading...</span>
-  </div>
-
-  <div class="row">
-    <span class="label">Last Login:</span>
-    <span class="value" id="lastLogin">Loading...</span>
-  </div>
-
-  <div class="row">
-    <span class="label">Member Since:</span>
-    <span class="value" id="memberSince">Loading...</span>
-  </div>
-
-  <div class="row">
-    <span class="label">Total Bookings:</span>
-    <span class="value" id="bookings">Loading...</span>
-  </div>
-
+<div class="card">
+  <h2>My Requested Dates</h2>
+  <div id="myRequestList">Loading...</div>
 </div>
-```
 
-  </div>
+<script>
+  const savedUser = sessionStorage.getItem("rangebookerUser");
 
-  <script>
-    // Fake / placeholder data for now
-    const fakeUser = {
-      name: "James Padgett",
-      email: "james@example.com",
-      lastLogin: "4/27/2026 8:14 PM",
-      memberSince: "1/15/2025",
-      bookings: 12
-    };
+  if (!savedUser) {
+    window.location.href = "/login.html";
+  }
 
-    // Populate page
-    document.getElementById("name").textContent = fakeUser.name;
-    document.getElementById("email").textContent = fakeUser.email;
-    document.getElementById("lastLogin").textContent = fakeUser.lastLogin;
-    document.getElementById("memberSince").textContent = fakeUser.memberSince;
-    document.getElementById("bookings").textContent = fakeUser.bookings;
-  </script>
+  const user = JSON.parse(savedUser);
 
-</body>
-</html>
+  const loggedInEmail = (user.email || "").toLowerCase();
+  const loggedInName =
+    ((user.firstName || "") + " " + (user.lastName || "")).trim().toLowerCase();
+
+  async function loadMyRequests() {
+    try {
+      const res = await fetch("/api/GetPendingRequests");
+
+      if (!res.ok) {
+        throw new Error("Could not load pending requests.");
+      }
+
+      const requests = await res.json();
+
+      const myRequests = requests
+        .filter(item => {
+          const requestEmail = (item.MemberEmailColSP || "").toLowerCase();
+          const requestName = (item.MemberNameColSP || "").trim().toLowerCase();
+
+          return requestEmail === loggedInEmail || requestName === loggedInName;
+        })
+        .sort((a, b) => {
+          return new Date(a.DateRequestWasAdded) - new Date(b.DateRequestWasAdded);
+        });
+
+      const container = document.getElementById("myRequestList");
+
+      if (myRequests.length === 0) {
+        container.innerHTML = "<p>You do not have any pending date requests.</p>";
+        return;
+      }
+
+      container.innerHTML = myRequests.map(item => `
+        <div style="padding:12px 0; border-bottom:1px solid #e5e7eb;">
+          <strong>${formatDateOnly(item.RequestedDateColSP || item.DateColSP || item.DateToFilterID || "")}</strong><br>
+          <span>Status: ${item.StatusColSP || "Pending"}</span><br>
+          <span>Requested: ${formatDateTime(item.DateRequestWasAdded)}</span>
+        </div>
+      `).join("");
+
+    } catch (err) {
+      console.error(err);
+      document.getElementById("myRequestList").innerHTML =
+        "<p>Error loading your requests.</p>";
+    }
+  }
+
+  function formatDateOnly(value) {
+    if (!value) return "";
+
+    const d = new Date(value);
+
+    if (isNaN(d)) {
+      return value;
+    }
+
+    return d.toLocaleDateString("en-US", {
+      month: "numeric",
+      day: "numeric",
+      year: "numeric"
+    });
+  }
+
+  function formatDateTime(value) {
+    if (!value) return "";
+
+    const d = new Date(value);
+
+    if (isNaN(d)) {
+      return value;
+    }
+
+    return d.toLocaleString("en-US", {
+      month: "numeric",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit"
+    });
+  }
+
+  loadMyRequests();
+</script>
