@@ -3,226 +3,74 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <title>RangeBooker</title>
 
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background: #f5f7fb;
-      color: #1f2937;
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f5f7fb; color: #1f2937; }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 24px; }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 20px; }
+    h1 { margin: 0 0 8px 0; font-size: 32px; }
+    .subtext { color: #6b7280; }
+
+    .login-link, .nav-link, button {
+      display: inline-block; background: #2563eb; color: white; padding: 10px 16px;
+      border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 600;
+      border: none; cursor: pointer;
     }
 
-    .wrap {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 24px;
-    }
+    .login-link:hover, .nav-link:hover, button:hover { background: #1d4ed8; }
 
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 16px;
-      margin-bottom: 20px;
-    }
+    .cancel-btn { margin-top: 12px; background: #dc2626; }
+    .cancel-btn:hover { background: #b91c1c; }
 
-    h1 {
-      margin: 0 0 8px 0;
-      font-size: 32px;
-    }
+    .toolbar { margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+    #status { margin-bottom: 18px; font-weight: bold; }
 
-    .subtext {
-      color: #6b7280;
-    }
+    .legend { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; color: #4b5563; font-size: 14px; }
+    .legend-item { background: white; border-radius: 999px; padding: 7px 10px; border: 1px solid #e5e7eb; }
 
-    .login-link,
-    .nav-link,
-    button {
-      display: inline-block;
-      background: #2563eb;
-      color: white;
-      padding: 10px 16px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 600;
-      border: none;
-      cursor: pointer;
-    }
-
-    .login-link:hover,
-    .nav-link:hover,
-    button:hover {
-      background: #1d4ed8;
-    }
-
-    .cancel-btn {
-      margin-top: 12px;
-      background: #dc2626;
-    }
-
-    .cancel-btn:hover {
-      background: #b91c1c;
-    }
-
-    .toolbar {
-      margin-bottom: 20px;
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    #status {
-      margin-bottom: 18px;
-      font-weight: bold;
-    }
-
-    .legend {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 18px;
-      color: #4b5563;
-      font-size: 14px;
-    }
-
-    .legend-item {
-      background: white;
-      border-radius: 999px;
-      padding: 7px 10px;
-      border: 1px solid #e5e7eb;
-    }
-
-    .calendar-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-      gap: 16px;
-    }
-
-    .card-link {
-      display: block;
-      text-decoration: none;
-      color: inherit;
-    }
+    .calendar-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
+    .card-link { display: block; text-decoration: none; color: inherit; }
 
     .day-card {
-      background: white;
-      border-radius: 14px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-      padding: 16px;
-      border-left: 8px solid #d1d5db;
-      min-height: 150px;
+      background: white; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      padding: 16px; border-left: 8px solid #d1d5db; min-height: 150px;
       transition: transform 0.15s ease, box-shadow 0.15s ease;
     }
 
-    .day-card.available {
-      border-left-color: #16a34a;
-      cursor: pointer;
-    }
+    .day-card.available { border-left-color: #16a34a; cursor: pointer; }
+    .day-card.available:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.12); }
+    .day-card.requested { border-left-color: #d97706; }
+    .day-card.confirmed { border-left-color: #2563eb; }
+    .day-card.booked { border-left-color: #dc2626; opacity: 0.92; }
+    .day-card.blocked { border-left-color: #6b7280; background: #f9fafb; opacity: 0.88; }
 
-    .day-card.available:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(0,0,0,0.12);
-    }
-
-    .day-card.requested {
-      border-left-color: #d97706;
-    }
-
-    .day-card.confirmed {
-      border-left-color: #2563eb;
-    }
-
-    .day-card.booked {
-      border-left-color: #dc2626;
-      opacity: 0.92;
-    }
-
-    .day-card.blocked {
-      border-left-color: #6b7280;
-      background: #f9fafb;
-      opacity: 0.88;
-    }
-
-    .date-text {
-      font-size: 18px;
-      font-weight: 700;
-      margin-bottom: 10px;
-    }
-
-    .time-text {
-      font-size: 15px;
-      margin-bottom: 12px;
-      color: #374151;
-    }
+    .date-text { font-size: 18px; font-weight: 700; margin-bottom: 10px; }
+    .time-text { font-size: 15px; margin-bottom: 12px; color: #374151; }
 
     .badge {
-      display: inline-block;
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size: 13px;
-      font-weight: 700;
-      margin-right: 6px;
-      margin-bottom: 6px;
+      display: inline-block; padding: 6px 10px; border-radius: 999px;
+      font-size: 13px; font-weight: 700; margin-right: 6px; margin-bottom: 6px;
     }
 
-    .badge.available {
-      background: #dcfce7;
-      color: #166534;
-    }
+    .badge.available { background: #dcfce7; color: #166534; }
+    .badge.booked { background: #fee2e2; color: #991b1b; }
+    .badge.requested { background: #fef3c7; color: #92400e; }
+    .badge.confirmed { background: #dbeafe; color: #1e40af; }
+    .badge.blocked { background: #e5e7eb; color: #374151; }
 
-    .badge.booked {
-      background: #fee2e2;
-      color: #991b1b;
-    }
-
-    .badge.requested {
-      background: #fef3c7;
-      color: #92400e;
-    }
-
-    .badge.confirmed {
-      background: #dbeafe;
-      color: #1e40af;
-    }
-
-    .badge.blocked {
-      background: #e5e7eb;
-      color: #374151;
-    }
-
-    .hint-text {
-      margin-top: 8px;
-      font-size: 12px;
-      color: #6b7280;
-    }
-
-    .empty-message {
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-    }
+    .hint-text { margin-top: 8px; font-size: 12px; color: #6b7280; }
+    .empty-message { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
 
     @media (max-width: 640px) {
-      .header {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .login-link {
-        text-align: center;
-      }
+      .header { flex-direction: column; align-items: stretch; }
+      .login-link { text-align: center; }
     }
   </style>
 </head>
 
 <body>
   <div class="wrap">
-
     <div class="header">
       <div>
         <h1>RangeBooker</h1>
@@ -247,7 +95,6 @@
 
     <div id="status"></div>
     <div id="calendar" class="calendar-grid"></div>
-
   </div>
 
   <script>
@@ -260,11 +107,8 @@
     }
 
     const currentUser = JSON.parse(savedUser);
-
     const memberId = currentUser.id || currentUser.ID || currentUser.Id || "";
-
-    const memberName =
-      `${currentUser.firstName || ""} ${currentUser.lastName || ""}`.trim();
+    const memberName = `${currentUser.firstName || ""} ${currentUser.lastName || ""}`.trim();
 
     document.getElementById("welcomeText").textContent =
       `Welcome ${memberName || "Member"}. View available, requested, and confirmed range days.`;
@@ -348,31 +192,21 @@
       return myRequests.find(req => {
         const reqDateId = String(req.dateId || "");
         const calendarId = String(calendarItem.id || "");
-
         return reqDateId === calendarId;
       });
     }
 
     function getTooCloseRequest(myRequests, calendarItem) {
       return myRequests.find(req => {
-        if (!isBlockingRequest(req.status)) {
-          return false;
-        }
+        if (!isBlockingRequest(req.status)) return false;
 
         const reqDateId = String(req.dateId || "");
         const calendarId = String(calendarItem.id || "");
 
-        if (reqDateId === calendarId) {
-          return false;
-        }
+        if (reqDateId === calendarId) return false;
+        if (!req.requestedDate) return false;
 
-        const requestDate = req.requestedDate;
-
-        if (!requestDate) {
-          return false;
-        }
-
-        return daysBetween(calendarItem.date, requestDate) <= MIN_DAYS_BETWEEN_REQUESTS;
+        return daysBetween(calendarItem.date, req.requestedDate) <= MIN_DAYS_BETWEEN_REQUESTS;
       });
     }
 
@@ -382,9 +216,7 @@
         return;
       }
 
-      const confirmed = confirm("Cancel this booking request?");
-
-      if (!confirmed) {
+      if (!confirm("Cancel this booking request?")) {
         return;
       }
 
@@ -394,21 +226,22 @@
           headers: {
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({
-            requestId: requestId
-          })
+          body: JSON.stringify({ requestId })
         });
 
+        const text = await response.text();
         let data = {};
 
-        try {
-          data = await response.json();
-        } catch {
-          data = {};
+        if (text) {
+          try {
+            data = JSON.parse(text);
+          } catch {
+            data = {};
+          }
         }
 
-        if (!response.ok || !data.success) {
-          alert(data.error || "Could not cancel request.");
+        if (!response.ok || data.success === false) {
+          alert(data.error || text || "Could not cancel request.");
           return;
         }
 
@@ -445,7 +278,16 @@
             `/api/GetMyRequests?memberId=${encodeURIComponent(memberId)}`
           );
 
-          const requestData = await requestResponse.json();
+          const requestText = await requestResponse.text();
+          let requestData = {};
+
+          if (requestText) {
+            try {
+              requestData = JSON.parse(requestText);
+            } catch {
+              requestData = {};
+            }
+          }
 
           if (requestResponse.ok && requestData.success) {
             myRequests = requestData.requests || [];
@@ -540,15 +382,11 @@
               </div>
 
               <div class="hint-text">${hintText}</div>
-
               ${cancelButton}
             </div>
           `;
 
-          const canClick =
-            isAvailable &&
-            !myRequest &&
-            !tooCloseRequest;
+          const canClick = isAvailable && !myRequest && !tooCloseRequest;
 
           if (canClick) {
             return `
