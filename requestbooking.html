@@ -160,11 +160,23 @@
     const status = params.get("status") || "";
     const dateId = params.get("id") || params.get("dateId") || "";
 
+    const memberId = Number(user.id || user.ID || user.Id || 0);
+
     const memberName =
-      ((user.firstName || "") + " " + (user.lastName || "")).trim();
+      (
+        (user.firstName || user.FirstName || "") +
+        " " +
+        (user.lastName || user.LastName || "")
+      ).trim() || "Member";
+
+    const memberEmail =
+      user.email ||
+      user.Email ||
+      user.loginemail ||
+      "";
 
     document.getElementById("memberName").textContent = memberName;
-    document.getElementById("memberEmail").textContent = user.email || "";
+    document.getElementById("memberEmail").textContent = memberEmail;
 
     document.getElementById("selectedDate").textContent = formatDisplayDate(rawDate);
     document.getElementById("selectedStart").textContent = start;
@@ -230,6 +242,22 @@
 
       const cleanDateForSharePoint = formatDateForSharePoint(rawDate);
 
+      if (!memberId) {
+        showMessage(
+          "Missing member ID from your login session. Please log out and log back in.",
+          "error"
+        );
+        return;
+      }
+
+      if (!memberEmail) {
+        showMessage(
+          "Missing member email from your login session. Please log out and log back in.",
+          "error"
+        );
+        return;
+      }
+
       if (!cleanDateForSharePoint || !dateId) {
         showMessage(
           "Missing date information. Please go back to the calendar and select the date again.",
@@ -239,9 +267,10 @@
       }
 
       const payload = {
-        memberId: Number(user.id),
-        userLevel: Number(user.memberType || 1),
+        memberId: memberId,
+        userLevel: Number(user.memberType || user.MemberType || 1),
         memberName: memberName,
+        memberEmail: memberEmail,
         dateActual: cleanDateForSharePoint,
         dateId: Number(dateId),
         notes: notes
