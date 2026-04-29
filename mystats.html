@@ -1,150 +1,264 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>My Stats</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<style>
-body { font-family: Arial; background:#f5f7fb; padding:24px; }
-.container { max-width:760px; margin:auto; }
-.card { background:white; padding:24px; border-radius:14px; margin-bottom:20px; box-shadow:0 2px 10px rgba(0,0,0,0.08);}
-.request { padding:12px 0; border-bottom:1px solid #e5e7eb;}
-.date { font-weight:bold; font-size:18px;}
-.pending { color:orange;}
-.approved { color:green;}
-.error { color:#b91c1c; background:#fee2e2; padding:12px; border-radius:10px;}
-.debug { margin-top:12px; font-size:12px; background:#eee; padding:10px;}
-</style>
+  <title>My Stats</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f7fb;
+      margin: 0;
+      padding: 24px;
+      color: #1f2937;
+    }
+
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: #ffffff;
+      padding: 24px;
+      border-radius: 16px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+
+    h1, h2 {
+      margin-top: 0;
+      margin-bottom: 16px;
+    }
+
+    .profile-row {
+      margin-bottom: 8px;
+      font-size: 16px;
+    }
+
+    .label {
+      font-weight: bold;
+      color: #374151;
+    }
+
+    .summary {
+      color: #6b7280;
+      margin-bottom: 16px;
+    }
+
+    .request {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .request-date {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 6px;
+      color: #111827;
+    }
+
+    .request-meta {
+      font-size: 14px;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+
+    .status {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .requesting,
+    .pending {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .approved {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .denied,
+    .rejected {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .message {
+      color: #6b7280;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .error {
+      color: #991b1b;
+      background: #fee2e2;
+      border: 1px solid #fecaca;
+      padding: 14px;
+      border-radius: 12px;
+      white-space: pre-wrap;
+    }
+  </style>
 </head>
 
 <body>
 
-<div class="container">
+  <div class="container">
 
-<div class="card">
-<h1>My Stats</h1>
-<div>Name: <span id="memberName"></span></div>
-<div>Email: <span id="memberEmail"></span></div>
-</div>
+    <div class="card">
+      <h1>My Stats</h1>
 
-<div class="card">
-<h2>My Requested Dates</h2>
-<div id="myRequestList">Loading...</div>
-<div id="debugBox" class="debug"></div>
-</div>
-
-</div>
-
-<script>
-
-const debugLines = [];
-function log(msg){
-  debugLines.push(msg);
-  document.getElementById("debugBox").textContent = debugLines.join("\n");
-  console.log(msg);
-}
-
-function showError(msg){
-  document.getElementById("myRequestList").innerHTML =
-    `<div class="error">${msg}</div>`;
-}
-
-log("START");
-
-// LOGIN
-const savedUser = sessionStorage.getItem("rangebookerUser");
-
-if(!savedUser){
-  log("NO SESSION");
-  window.location.href="/login.html";
-}
-
-const user = JSON.parse(savedUser);
-
-const memberId = user.id;
-const email = user.email;
-
-document.getElementById("memberName").textContent =
-  `${user.firstName} ${user.lastName}`;
-
-document.getElementById("memberEmail").textContent = email;
-
-log("User ID = " + memberId);
-
-// LOAD DATA
-async function load(){
-
-  if(!memberId){
-    showError("Missing memberId from login session");
-    return;
-  }
-
-  const url = `/api/GetMyRequests?memberId=${memberId}`;
-
-  log("Calling API: " + url);
-
-  let res;
-
-  try{
-    res = await fetch(url);
-  }catch(e){
-    showError("API unreachable\n" + e.message);
-    return;
-  }
-
-  log("Status: " + res.status);
-
-  if(!res.ok){
-    showError("API failed: " + res.status);
-    return;
-  }
-
-  const data = await res.json();
-
-  log("Success flag: " + data.success);
-
-  if(!data.success){
-    showError(data.error || "API returned failure");
-    return;
-  }
-
-  const requests = data.requests || [];
-
-  log("Total found: " + requests.length);
-
-  if(requests.length === 0){
-    document.getElementById("myRequestList").innerHTML =
-      "No requests found.";
-    return;
-  }
-
-  document.getElementById("myRequestList").innerHTML =
-    requests.map(r => `
-      <div class="request">
-        <div class="date">${formatDate(r.requestedDate)}</div>
-        <div class="${(r.status || "").toLowerCase()}">${r.status}</div>
-        <div>${formatDateTime(r.requestedAt)}</div>
+      <div class="profile-row">
+        <span class="label">Name:</span>
+        <span id="memberName">Loading...</span>
       </div>
-    `).join("");
 
-}
+      <div class="profile-row">
+        <span class="label">Email:</span>
+        <span id="memberEmail">Loading...</span>
+      </div>
+    </div>
 
-function formatDate(v){
-  if(!v) return "";
-  const d = new Date(v);
-  return isNaN(d) ? v : d.toLocaleDateString();
-}
+    <div class="card">
+      <h2>My Requested Dates</h2>
+      <div id="requestSummary" class="summary">Loading your requests...</div>
+      <div id="myRequestList">Loading...</div>
+    </div>
 
-function formatDateTime(v){
-  if(!v) return "";
-  const d = new Date(v);
-  return isNaN(d) ? v : d.toLocaleString();
-}
+  </div>
 
-load();
+  <script>
+    const savedUser = sessionStorage.getItem("rangebookerUser");
 
-</script>
+    if (!savedUser) {
+      window.location.href = "/login.html";
+    }
+
+    const user = JSON.parse(savedUser);
+
+    const memberId = user.id;
+    const email = user.email || "";
+
+    document.getElementById("memberName").textContent =
+      `${user.firstName || ""} ${user.lastName || ""}`.trim() || "Member";
+
+    document.getElementById("memberEmail").textContent = email;
+
+    async function loadRequests() {
+      const listContainer = document.getElementById("myRequestList");
+      const summaryContainer = document.getElementById("requestSummary");
+
+      if (!memberId) {
+        showError("Missing member ID from login session.");
+        return;
+      }
+
+      const url = `/api/GetMyRequests?memberId=${encodeURIComponent(memberId)}`;
+
+      try {
+        const res = await fetch(url);
+
+        if (!res.ok) {
+          showError("API failed: " + res.status);
+          return;
+        }
+
+        const data = await res.json();
+
+        if (!data.success) {
+          showError(data.error || "API returned failure.");
+          return;
+        }
+
+        const requests = data.requests || [];
+
+        if (requests.length === 0) {
+          summaryContainer.textContent = "";
+          listContainer.innerHTML =
+            `<div class="message">You do not have any requested dates yet.</div>`;
+          return;
+        }
+
+        summaryContainer.textContent =
+          `You currently have ${requests.length} requested date${requests.length === 1 ? "" : "s"}.`;
+
+        listContainer.innerHTML = requests.map(r => {
+          const status = r.status || "Requesting";
+          const statusClass = status.toLowerCase();
+
+          return `
+            <div class="request">
+              <div class="request-date">${formatDateWithDay(r.requestedDate)}</div>
+              <div class="status ${statusClass}">${status}</div>
+              <div class="request-meta">
+                Requested on ${formatDateTime(r.requestedAt)}
+              </div>
+            </div>
+          `;
+        }).join("");
+
+      } catch (err) {
+        showError("Could not load your requests.\n\n" + err.message);
+      }
+    }
+
+    function showError(message) {
+      document.getElementById("requestSummary").textContent = "";
+      document.getElementById("myRequestList").innerHTML =
+        `<div class="error">${message}</div>`;
+    }
+
+    function formatDateWithDay(value) {
+      if (!value) return "";
+
+      const d = new Date(value);
+
+      if (isNaN(d)) {
+        return value;
+      }
+
+      return d.toLocaleDateString("en-US", {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+        year: "numeric"
+      });
+    }
+
+    function formatDateTime(value) {
+      if (!value) return "";
+
+      const d = new Date(value);
+
+      if (isNaN(d)) {
+        return value;
+      }
+
+      return d.toLocaleString("en-US", {
+        weekday: "long",
+        month: "numeric",
+        day: "numeric",
+        year: "numeric",
+        hour: "numeric",
+        minute: "2-digit"
+      });
+    }
+
+    loadRequests();
+  </script>
 
 </body>
 </html>
