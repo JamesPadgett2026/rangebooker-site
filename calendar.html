@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <title>RangeBooker</title>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -27,11 +29,6 @@
       margin-bottom: 20px;
     }
 
-    .header-left {
-      flex: 1;
-      min-width: 0;
-    }
-
     h1 {
       margin: 0 0 8px 0;
       font-size: 32px;
@@ -53,15 +50,14 @@
       white-space: nowrap;
     }
 
-    .login-link:hover {
-      background: #1d4ed8;
-    }
-
     .toolbar {
       margin-bottom: 20px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
-    button {
+    button, .nav-link {
       background: #2563eb;
       color: white;
       border: none;
@@ -69,9 +65,13 @@
       border-radius: 8px;
       cursor: pointer;
       font-size: 14px;
+      text-decoration: none;
+      display: inline-block;
     }
 
-    button:hover {
+    button:hover,
+    .nav-link:hover,
+    .login-link:hover {
       background: #1d4ed8;
     }
 
@@ -80,18 +80,41 @@
       font-weight: bold;
     }
 
+    .legend {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+      color: #4b5563;
+      font-size: 14px;
+    }
+
+    .legend-item {
+      background: white;
+      border-radius: 999px;
+      padding: 7px 10px;
+      border: 1px solid #e5e7eb;
+    }
+
     .calendar-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
       gap: 16px;
     }
 
+    .card-link {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+    }
+
     .day-card {
       background: white;
       border-radius: 14px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
       padding: 16px;
       border-left: 8px solid #d1d5db;
+      min-height: 145px;
       transition: transform 0.15s ease, box-shadow 0.15s ease;
     }
 
@@ -102,18 +125,20 @@
 
     .day-card.available:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+    }
+
+    .day-card.requested {
+      border-left-color: #d97706;
+    }
+
+    .day-card.confirmed {
+      border-left-color: #2563eb;
     }
 
     .day-card.booked {
       border-left-color: #dc2626;
       opacity: 0.92;
-    }
-
-    .card-link {
-      display: block;
-      text-decoration: none;
-      color: inherit;
     }
 
     .date-text {
@@ -134,6 +159,8 @@
       border-radius: 999px;
       font-size: 13px;
       font-weight: 700;
+      margin-right: 6px;
+      margin-bottom: 6px;
     }
 
     .badge.available {
@@ -146,8 +173,18 @@
       color: #991b1b;
     }
 
+    .badge.requested {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .badge.confirmed {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
     .hint-text {
-      margin-top: 10px;
+      margin-top: 8px;
       font-size: 12px;
       color: #6b7280;
     }
@@ -156,7 +193,7 @@
       background: white;
       padding: 20px;
       border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
     }
 
     @media (max-width: 640px) {
@@ -174,21 +211,31 @@
 
 <body>
   <div class="wrap">
+
     <div class="header">
-      <div class="header-left">
+      <div>
         <h1>RangeBooker</h1>
-        <div id="welcomeText" class="subtext">View days and whether they are available.</div>
+        <div id="welcomeText" class="subtext">Loading calendar...</div>
       </div>
 
       <a id="loginBtn" class="login-link" href="/login.html">Logout</a>
     </div>
 
     <div class="toolbar">
-      <button onclick="loadCalendar()">Load Calendar</button>
+      <button onclick="loadCalendar()">Refresh Calendar</button>
+      <a class="nav-link" href="/mystats.html">My Stats</a>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item">🟢 Available</div>
+      <div class="legend-item">🟠 Requested by you</div>
+      <div class="legend-item">🔵 Confirmed for you</div>
+      <div class="legend-item">🔴 Booked</div>
     </div>
 
     <div id="status"></div>
     <div id="calendar" class="calendar-grid"></div>
+
   </div>
 
   <script>
@@ -200,29 +247,48 @@
 
     const currentUser = JSON.parse(savedUser);
 
-    const welcomeText = document.getElementById("welcomeText");
-    welcomeText.textContent =
-      "Welcome " + (currentUser.firstName || "") + " " + (currentUser.lastName || "") + ". View available range days.";
+    const memberId = currentUser.id || "";
+    const memberName =
+      `${currentUser.firstName || ""} ${currentUser.lastName || ""}`.trim();
 
-    const loginBtn = document.getElementById("loginBtn");
-    loginBtn.onclick = function (e) {
+    document.getElementById("welcomeText").textContent =
+      `Welcome ${memberName || "Member"}. View available, requested, and confirmed range days.`;
+
+    document.getElementById("loginBtn").onclick = function (e) {
       e.preventDefault();
       sessionStorage.removeItem("rangebookerUser");
       window.location.href = "/login.html";
     };
 
+    function normalize(value) {
+      return String(value || "").trim().toLowerCase();
+    }
+
+    function isConfirmedStatus(value) {
+      const status = normalize(value);
+      return status === "approved" || status === "confirmed" || status === "booked";
+    }
+
+    function isRequestedStatus(value) {
+      const status = normalize(value);
+      return status === "requesting" || status === "requested" || status === "pending";
+    }
+
     function formatDateText(dateString) {
+      if (!dateString) return "";
+
       const date = new Date(dateString);
+
+      if (isNaN(date)) {
+        return dateString;
+      }
+
       return date.toLocaleDateString("en-US", {
         weekday: "long",
         month: "long",
         day: "numeric",
         year: "numeric"
       });
-    }
-
-    function normalizeStatus(value) {
-      return String(value || "").trim().toLowerCase();
     }
 
     function buildRequestUrl(item) {
@@ -237,71 +303,130 @@
       return `/requestbooking.html?${params.toString()}`;
     }
 
+    function getRequestForDate(myRequests, calendarItem) {
+      return myRequests.find(req => {
+        const reqDateId = String(req.dateId || "");
+        const calendarId = String(calendarItem.id || "");
+
+        return reqDateId === calendarId;
+      });
+    }
+
     async function loadCalendar() {
       const statusEl = document.getElementById("status");
       const calendarEl = document.getElementById("calendar");
 
-      statusEl.textContent = "Loading...";
+      statusEl.textContent = "Loading calendar...";
       calendarEl.innerHTML = "";
 
       try {
-        const response = await fetch("/api/GetLocations");
-        const data = await response.json();
+        const locationsResponse = await fetch("/api/GetLocations");
+        const locationsData = await locationsResponse.json();
 
-        if (!response.ok || !data.success) {
+        if (!locationsResponse.ok || !locationsData.success) {
           statusEl.textContent = "Could not load calendar data.";
-          calendarEl.innerHTML = `<div class="empty-message"><pre>${JSON.stringify(data, null, 2)}</pre></div>`;
+          calendarEl.innerHTML =
+            `<div class="empty-message"><pre>${JSON.stringify(locationsData, null, 2)}</pre></div>`;
           return;
         }
 
-        const items = (data.locations || [])
+        let myRequests = [];
+
+        if (memberId) {
+          const requestResponse = await fetch(
+            `/api/GetMyRequests?memberId=${encodeURIComponent(memberId)}`
+          );
+
+          const requestData = await requestResponse.json();
+
+          if (requestResponse.ok && requestData.success) {
+            myRequests = requestData.requests || [];
+          }
+        }
+
+        const items = (locationsData.locations || [])
           .map(item => ({
             id: item.id,
-            date: item.fields?.DateTimeToSchedule,
-            start: item.fields?.StartTimeTextColSP,
-            end: item.fields?.EndTimeTextColSP,
-            status: item.fields?.AvailableOrBooked
+            date: item.dateTimeToSchedule,
+            start: item.startTime,
+            end: item.endTime,
+            status: item.availableOrBooked
           }))
-          .filter(item => item.id && item.date && item.status)
+          .filter(item => item.id && item.date)
           .sort((a, b) => new Date(a.date) - new Date(b.date));
 
         if (!items.length) {
           statusEl.textContent = "No calendar items found.";
-          calendarEl.innerHTML = `<div class="empty-message">There are no days to display.</div>`;
+          calendarEl.innerHTML =
+            `<div class="empty-message">There are no days to display.</div>`;
           return;
         }
 
-        statusEl.textContent = `${items.length} day(s) loaded`;
+        const requestedCount = myRequests.filter(r => isRequestedStatus(r.status)).length;
+        const confirmedCount = myRequests.filter(r => isConfirmedStatus(r.status)).length;
+
+        statusEl.textContent =
+          `${items.length} day(s) loaded. You have ${requestedCount} requested and ${confirmedCount} confirmed.`;
 
         calendarEl.innerHTML = items.map(item => {
-          const status = normalizeStatus(item.status);
-          const isAvailable = status === "available";
-          const requestUrl = buildRequestUrl(item);
+          const calendarStatus = normalize(item.status);
+          const isAvailable = calendarStatus === "available";
 
-          if (isAvailable) {
+          const myRequest = getRequestForDate(myRequests, item);
+
+          let cardClass = isAvailable ? "available" : "booked";
+          let mainBadge = isAvailable
+            ? `<span class="badge available">Available</span>`
+            : `<span class="badge booked">Booked</span>`;
+
+          let personalBadge = "";
+          let hintText = "";
+
+          if (myRequest) {
+            if (isConfirmedStatus(myRequest.status)) {
+              cardClass = "confirmed";
+              personalBadge = `<span class="badge confirmed">Confirmed for you</span>`;
+              hintText = "This date is confirmed for your account.";
+            } else {
+              cardClass = "requested";
+              personalBadge = `<span class="badge requested">Requested by you</span>`;
+              hintText = "You have already requested this date.";
+            }
+          } else if (isAvailable) {
+            hintText = "Click to request this booking.";
+          } else {
+            hintText = "This date is not currently available.";
+          }
+
+          const cardHtml = `
+            <div class="day-card ${cardClass}">
+              <div class="date-text">${formatDateText(item.date)}</div>
+              <div class="time-text">
+                ${item.start || ""}${item.start && item.end ? " - " : ""}${item.end || ""}
+              </div>
+              <div>
+                ${mainBadge}
+                ${personalBadge}
+              </div>
+              <div class="hint-text">${hintText}</div>
+            </div>
+          `;
+
+          if (isAvailable && !myRequest) {
             return `
-              <a class="card-link" href="${requestUrl}">
-                <div class="day-card available">
-                  <div class="date-text">${formatDateText(item.date)}</div>
-                  <div class="time-text">${item.start || ""}${item.start && item.end ? " - " : ""}${item.end || ""}</div>
-                  <div class="badge available">Available</div>
-                  <div class="hint-text">Click to request this booking</div>
-                </div>
+              <a class="card-link" href="${buildRequestUrl(item)}">
+                ${cardHtml}
               </a>
             `;
           }
 
-          return `
-            <div class="day-card booked">
-              <div class="date-text">${formatDateText(item.date)}</div>
-              <div class="time-text">${item.start || ""}${item.start && item.end ? " - " : ""}${item.end || ""}</div>
-              <div class="badge booked">Booked</div>
-            </div>
-          `;
+          return cardHtml;
         }).join("");
+
       } catch (error) {
         statusEl.textContent = "Error loading calendar.";
-        calendarEl.innerHTML = `<div class="empty-message">${error.message}</div>`;
+        calendarEl.innerHTML =
+          `<div class="empty-message">${error.message}</div>`;
       }
     }
 
