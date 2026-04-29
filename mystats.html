@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>My Stats</title>
 
   <style>
@@ -15,19 +15,30 @@
     }
 
     .container {
-      max-width: 700px;
+      max-width: 760px;
       margin: 0 auto;
     }
 
     .card {
-      background: white;
+      background: #ffffff;
       border-radius: 14px;
       padding: 24px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
     }
 
-    h1 {
+    h1, h2 {
       margin-top: 0;
+    }
+
+    .user-info {
+      margin-bottom: 12px;
+      font-size: 16px;
+    }
+
+    .label {
+      font-weight: bold;
+      color: #374151;
     }
 
     .request {
@@ -35,95 +46,280 @@
       border-bottom: 1px solid #e5e7eb;
     }
 
+    .request:last-child {
+      border-bottom: none;
+    }
+
+    .date {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+
     .status {
       font-weight: bold;
     }
 
-    .pending { color: orange; }
-    .approved { color: green; }
+    .pending {
+      color: #d97706;
+    }
+
+    .approved {
+      color: #15803d;
+    }
+
+    .denied {
+      color: #b91c1c;
+    }
+
+    .message {
+      color: #6b7280;
+    }
+
+    .error {
+      color: #b91c1c;
+      background: #fee2e2;
+      border: 1px solid #fecaca;
+      padding: 12px;
+      border-radius: 10px;
+      white-space: pre-wrap;
+    }
+
+    .debug {
+      background: #f3f4f6;
+      border: 1px solid #d1d5db;
+      color: #374151;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      white-space: pre-wrap;
+      margin-top: 12px;
+    }
   </style>
 </head>
+
 <body>
 
   <div class="container">
+
     <div class="card">
-      <h1>My Requested Dates</h1>
-      <div id="myRequestList">Loading...</div>
+      <h1>My Stats</h1>
+
+      <div class="user-info">
+        <span class="label">Name:</span>
+        <span id="memberName">Loading...</span>
+      </div>
+
+      <div class="user-info">
+        <span class="label">Email:</span>
+        <span id="memberEmail">Loading...</span>
+      </div>
+
+      <div class="user-info">
+        <span class="label">Last Login:</span>
+        <span id="lastLogin">Fake for now</span>
+      </div>
     </div>
+
+    <div class="card">
+      <h2>My Requested Dates</h2>
+      <div id="myRequestList">Loading...</div>
+      <div id="debugBox" class="debug"></div>
+    </div>
+
   </div>
 
   <script>
-    // 🔐 Get logged-in user
+    const API_URL = "/api/GetPendingRequests";
+
+    const debugLines = [];
+
+    function addCheckpoint(message) {
+      debugLines.push(message);
+      const debugBox = document.getElementById("debugBox");
+      if (debugBox) {
+        debugBox.textContent = debugLines.join("\n");
+      }
+      console.log(message);
+    }
+
+    function showError(message) {
+      const container = document.getElementById("myRequestList");
+      container.innerHTML = `<div class="error">${message}</div>`;
+    }
+
+    addCheckpoint("Checkpoint 1: Page script started.");
+
     const savedUser = sessionStorage.getItem("rangebookerUser");
 
     if (!savedUser) {
+      addCheckpoint("Checkpoint 2 FAILED: No rangebookerUser found in sessionStorage.");
       window.location.href = "/login.html";
     }
 
-    const user = JSON.parse(savedUser);
-    const loggedInEmail = (user.email || "").toLowerCase();
+    let user = null;
 
-    // 🔧 FAKE DATA (for testing UI)
-    const requests = [
-      {
-        MemberEmailColSP: loggedInEmail,
-        DateIDLOckInColSP: "2026-05-01",
-        DateRequestWasAdded: "2026-04-28T20:14:00",
-        StatusColSP: "Pending"
-      },
-      {
-        MemberEmailColSP: loggedInEmail,
-        DateIDLOckInColSP: "2026-05-03",
-        DateRequestWasAdded: "2026-04-27T18:10:00",
-        StatusColSP: "Approved"
-      },
-      {
-        MemberEmailColSP: "someoneelse@test.com",
-        DateIDLOckInColSP: "2026-05-04",
-        DateRequestWasAdded: "2026-04-26T10:00:00",
-        StatusColSP: "Pending"
-      }
-    ];
+    try {
+      user = JSON.parse(savedUser);
+      addCheckpoint("Checkpoint 2 PASSED: Logged-in user found.");
+    } catch (err) {
+      addCheckpoint("Checkpoint 2 FAILED: Could not parse rangebookerUser JSON.");
+      showError("Login data is damaged. Please log out and log back in.");
+    }
 
-    function loadMyRequests() {
+    const loggedInEmail = user ? (user.email || "").toLowerCase() : "";
+
+    const loggedInName = user
+      ? ((user.firstName || "") + " " + (user.lastName || "")).trim()
+      : "";
+
+    document.getElementById("memberName").textContent = loggedInName || "Member";
+    document.getElementById("memberEmail").textContent = loggedInEmail || "No email found";
+
+    async function loadMyRequests() {
       const container = document.getElementById("myRequestList");
 
-      // ✅ FILTER (only logged-in user)
-      const myRequests = requests
-        .filter(item =>
-          item.MemberEmailColSP.toLowerCase() === loggedInEmail
-        )
-        .sort((a, b) =>
-          new Date(a.DateRequestWasAdded) - new Date(b.DateRequestWasAdded)
-        );
-
-      if (myRequests.length === 0) {
-        container.innerHTML = "<p>You do not have any pending date requests.</p>";
+      if (!loggedInEmail) {
+        addCheckpoint("Checkpoint 3 FAILED: Logged-in user email is blank.");
+        showError("Your login session does not include an email address.");
         return;
       }
 
-      // ✅ RENDER
+      addCheckpoint("Checkpoint 3 PASSED: Logged-in email is " + loggedInEmail);
+
+      let res;
+
+      try {
+        addCheckpoint("Checkpoint 4: Calling API: " + API_URL);
+        res = await fetch(API_URL);
+      } catch (err) {
+        addCheckpoint("Checkpoint 4 FAILED: Browser could not reach the API.");
+        showError("Could not reach the API.\n\nPossible causes:\n- API function is not deployed\n- Wrong function name\n- GitHub Action has not finished\n- Network issue\n\nError:\n" + err.message);
+        return;
+      }
+
+      addCheckpoint("Checkpoint 5: API responded with status " + res.status);
+
+      if (!res.ok) {
+        showError(
+          "API responded, but failed.\n\n" +
+          "Status: " + res.status + " " + res.statusText + "\n\n" +
+          "Most likely causes:\n" +
+          "- /api/GetPendingRequests does not exist yet\n" +
+          "- Function file name is wrong\n" +
+          "- Azure deployment failed\n" +
+          "- Function code has an error"
+        );
+        return;
+      }
+
+      let text = "";
+
+      try {
+        text = await res.text();
+        addCheckpoint("Checkpoint 6 PASSED: API returned text.");
+      } catch (err) {
+        addCheckpoint("Checkpoint 6 FAILED: Could not read API response text.");
+        showError("API responded, but the page could not read the response.\n\nError:\n" + err.message);
+        return;
+      }
+
+      let requests;
+
+      try {
+        requests = JSON.parse(text);
+        addCheckpoint("Checkpoint 7 PASSED: API response is valid JSON.");
+      } catch (err) {
+        addCheckpoint("Checkpoint 7 FAILED: API did not return valid JSON.");
+        showError(
+          "API did not return valid JSON.\n\n" +
+          "Returned text:\n" +
+          text.substring(0, 500)
+        );
+        return;
+      }
+
+      if (!Array.isArray(requests)) {
+        addCheckpoint("Checkpoint 8 FAILED: JSON is not an array/list.");
+        showError(
+          "API returned JSON, but not a list.\n\n" +
+          "Expected: [ { request1 }, { request2 } ]"
+        );
+        return;
+      }
+
+      addCheckpoint("Checkpoint 8 PASSED: API returned " + requests.length + " total request(s).");
+
+      const myRequests = requests
+        .filter(item => {
+          const requestEmail = (item.MemberEmailColSP || "").toLowerCase();
+          return requestEmail === loggedInEmail;
+        })
+        .sort((a, b) => {
+          return new Date(a.DateRequestWasAdded) - new Date(b.DateRequestWasAdded);
+        });
+
+      addCheckpoint("Checkpoint 9 PASSED: Found " + myRequests.length + " request(s) for this logged-in user.");
+
+      if (myRequests.length === 0) {
+        container.innerHTML =
+          '<p class="message">You do not have any pending date requests.</p>';
+        return;
+      }
+
       container.innerHTML = myRequests.map(item => {
-        const statusClass = item.StatusColSP.toLowerCase();
+        const status = item.StatusColSP || "Pending";
+        const statusClass = status.toLowerCase();
 
         return `
           <div class="request">
-            <strong>${formatDate(item.DateIDLOckInColSP)}</strong><br>
-            <span class="status ${statusClass}">${item.StatusColSP}</span><br>
-            <span>Requested: ${formatDateTime(item.DateRequestWasAdded)}</span>
+            <div class="date">${formatDate(item.DateIDLOckInColSP)}</div>
+            <div>
+              Status:
+              <span class="status ${statusClass}">${status}</span>
+            </div>
+            <div>
+              Requested: ${formatDateTime(item.DateRequestWasAdded)}
+            </div>
           </div>
         `;
       }).join("");
+
+      addCheckpoint("Checkpoint 10 PASSED: Requests rendered on page.");
     }
 
     function formatDate(value) {
+      if (!value) return "";
+
       const d = new Date(value);
-      return d.toLocaleDateString("en-US");
+
+      if (isNaN(d)) {
+        return value;
+      }
+
+      return d.toLocaleDateString("en-US", {
+        month: "numeric",
+        day: "numeric",
+        year: "numeric"
+      });
     }
 
     function formatDateTime(value) {
+      if (!value) return "";
+
       const d = new Date(value);
-      return d.toLocaleString("en-US");
+
+      if (isNaN(d)) {
+        return value;
+      }
+
+      return d.toLocaleString("en-US", {
+        month: "numeric",
+        day: "numeric",
+        year: "numeric",
+        hour: "numeric",
+        minute: "2-digit"
+      });
     }
 
     loadMyRequests();
