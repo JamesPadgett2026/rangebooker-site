@@ -66,9 +66,15 @@
     background: #1d4ed8;
   }
 
+  button:disabled {
+    background: #93c5fd;
+    cursor: not-allowed;
+  }
+
   .msg {
     margin-top: 10px;
     font-size: 14px;
+    min-height: 20px;
   }
 
   .error { color: #b91c1c; }
@@ -100,7 +106,7 @@
   <input id="email" placeholder="Email" />
   <input id="password" type="password" placeholder="Password" />
 
-  <button onclick="login()">Login</button>
+  <button id="loginButton" onclick="login()">Login</button>
 
   <div id="msg" class="msg"></div>
 
@@ -115,7 +121,19 @@ async function login() {
   const password = document.getElementById("password").value;
 
   const msg = document.getElementById("msg");
+  const loginButton = document.getElementById("loginButton");
+
+  msg.textContent = "";
+  msg.className = "msg";
+
+  if (!email || !password) {
+    msg.textContent = "Please enter your email and password.";
+    msg.className = "msg error";
+    return;
+  }
+
   msg.textContent = "Logging in...";
+  loginButton.disabled = true;
 
   try {
     const res = await fetch("/api/LoginMember", {
@@ -129,12 +147,20 @@ async function login() {
     const data = await res.json();
 
     if (!res.ok || !data.success) {
-      msg.textContent = data.error || "Login failed";
+      const message = data.message || data.error || "Login failed";
+
+      if (message.toLowerCase().includes("not been approved")) {
+        msg.textContent = "Your account has not been approved yet. Please wait for admin approval.";
+      } else {
+        msg.textContent = message;
+      }
+
       msg.className = "msg error";
+      loginButton.disabled = false;
       return;
     }
 
-    sessionStorage.setItem("rangebookerUser", JSON.stringify(data.member));
+    sessionStorage.setItem("rangebookerUser", JSON.stringify(data.user || data.member));
 
     msg.textContent = "Login successful!";
     msg.className = "msg success";
@@ -144,8 +170,9 @@ async function login() {
     }, 500);
 
   } catch (err) {
-    msg.textContent = err.message;
+    msg.textContent = "Server error. Please try again.";
     msg.className = "msg error";
+    loginButton.disabled = false;
   }
 }
 </script>
