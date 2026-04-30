@@ -1,283 +1,296 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>My Stats</title>
+<title>My Stats</title>
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f5f7fb;
-      margin: 0;
-      padding: 24px;
-      color: #1f2937;
-    }
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f5f7fb;
+    margin: 0;
+    padding: 24px;
+    color: #1f2937;
+  }
 
-    .container {
-      max-width: 760px;
-      margin: 0 auto;
-    }
+  .container {
+    max-width: 760px;
+    margin: 0 auto;
+  }
 
-    .back-button {
-      display: inline-block;
-      margin-bottom: 16px;
-      padding: 10px 16px;
-      background: #2563eb;
-      color: white;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: bold;
-      font-size: 14px;
-      transition: background 0.2s;
-    }
+  .back-button {
+    display: inline-block;
+    margin-bottom: 16px;
+    padding: 10px 16px;
+    background: #2563eb;
+    color: white;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 14px;
+  }
 
-    .back-button:hover {
-      background: #1d4ed8;
-    }
+  .back-button:hover {
+    background: #1d4ed8;
+  }
 
-    .card {
-      background: #ffffff;
-      padding: 24px;
-      border-radius: 16px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-    }
+  .card {
+    background: #ffffff;
+    padding: 24px;
+    border-radius: 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
 
-    h1, h2 {
-      margin-top: 0;
-      margin-bottom: 16px;
-    }
+  h1, h2 {
+    margin-top: 0;
+    margin-bottom: 16px;
+  }
 
-    .profile-row {
-      margin-bottom: 8px;
-      font-size: 16px;
-    }
+  .profile-row {
+    margin-bottom: 10px;
+    font-size: 16px;
+  }
 
-    .label {
-      font-weight: bold;
-      color: #374151;
-    }
+  .label {
+    font-weight: bold;
+    color: #374151;
+  }
 
-    .summary {
-      color: #6b7280;
-      margin-bottom: 16px;
-    }
+  .summary {
+    color: #6b7280;
+    margin-bottom: 16px;
+  }
 
-    .request {
-      background: #f9fafb;
-      border: 1px solid #e5e7eb;
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 12px;
-    }
+  .request {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
 
-    .request-date {
-      font-size: 20px;
-      font-weight: bold;
-      margin-bottom: 6px;
-      color: #111827;
-    }
+  .request-date {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 6px;
+    color: #111827;
+  }
 
-    .request-meta {
-      font-size: 14px;
-      color: #6b7280;
-      margin-top: 4px;
-    }
+  .request-meta {
+    font-size: 14px;
+    color: #6b7280;
+    margin-top: 4px;
+  }
 
-    .status {
-      display: inline-block;
-      margin-top: 8px;
-      padding: 5px 10px;
-      border-radius: 999px;
-      font-size: 13px;
-      font-weight: bold;
-    }
+  .status {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: bold;
+  }
 
-    .requesting,
-    .pending {
-      background: #fef3c7;
-      color: #92400e;
-    }
+  .requesting,
+  .pending {
+    background: #fef3c7;
+    color: #92400e;
+  }
 
-    .approved {
-      background: #dcfce7;
-      color: #166534;
-    }
+  .approved {
+    background: #dcfce7;
+    color: #166534;
+  }
 
-    .denied,
-    .rejected {
-      background: #fee2e2;
-      color: #991b1b;
-    }
+  .denied,
+  .rejected {
+    background: #fee2e2;
+    color: #991b1b;
+  }
 
-    .message {
-      color: #6b7280;
-      background: #f9fafb;
-      border: 1px solid #e5e7eb;
-      border-radius: 12px;
-      padding: 16px;
-    }
+  .message {
+    color: #6b7280;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px;
+  }
 
-    .error {
-      color: #991b1b;
-      background: #fee2e2;
-      border: 1px solid #fecaca;
-      padding: 14px;
-      border-radius: 12px;
-      white-space: pre-wrap;
-    }
-  </style>
+  .error {
+    color: #991b1b;
+    background: #fee2e2;
+    border: 1px solid #fecaca;
+    padding: 14px;
+    border-radius: 12px;
+    white-space: pre-wrap;
+  }
+</style>
 </head>
 
 <body>
 
-  <div class="container">
+<div class="container">
 
-    <a href="memberhome.html" class="back-button">← Back to Home</a>
+  <a href="memberhome.html" class="back-button">← Back to Home</a>
 
-    <div class="card">
-      <h1>My Stats</h1>
+  <div class="card">
+    <h1>My Stats</h1>
 
-      <div class="profile-row">
-        <span class="label">Name:</span>
-        <span id="memberName">Loading...</span>
-      </div>
-
-      <div class="profile-row">
-        <span class="label">Email:</span>
-        <span id="memberEmail">Loading...</span>
-      </div>
+    <div class="profile-row">
+      <span class="label">Name:</span>
+      <span id="memberName">Loading...</span>
     </div>
 
-    <div class="card">
-      <h2>My Requested Dates</h2>
-      <div id="requestSummary" class="summary">Loading your requests...</div>
-      <div id="myRequestList">Loading...</div>
+    <div class="profile-row">
+      <span class="label">Email:</span>
+      <span id="memberEmail">Loading...</span>
     </div>
 
+    <div class="profile-row">
+      <span class="label">Member Since:</span>
+      <span id="memberSince">Loading...</span>
+    </div>
+
+    <div class="profile-row">
+      <span class="label">Last Login:</span>
+      <span id="lastLogin">Loading...</span>
+    </div>
   </div>
 
-  <script>
-    const savedUser = sessionStorage.getItem("rangebookerUser");
+  <div class="card">
+    <h2>My Requested Dates</h2>
+    <div id="requestSummary" class="summary">Loading your requests...</div>
+    <div id="myRequestList">Loading...</div>
+  </div>
 
-    if (!savedUser) {
-      window.location.href = "/login.html";
+</div>
+
+<script>
+const savedUser = sessionStorage.getItem("rangebookerUser");
+
+if (!savedUser) {
+  window.location.href = "/login.html";
+}
+
+const user = JSON.parse(savedUser);
+
+const memberId = user.id;
+const email = user.email || "";
+
+// ===== PROFILE INFO =====
+document.getElementById("memberName").textContent =
+  `${user.firstName || ""} ${user.lastName || ""}`.trim() || "Member";
+
+document.getElementById("memberEmail").textContent = email;
+
+document.getElementById("memberSince").textContent =
+  formatDateWithDay(user.dateJoined || user.DateJoined);
+
+document.getElementById("lastLogin").textContent =
+  formatDateTime(user.lastLogin || user.LastLogin);
+
+// ===== LOAD REQUESTS =====
+async function loadRequests() {
+  const listContainer = document.getElementById("myRequestList");
+  const summaryContainer = document.getElementById("requestSummary");
+
+  if (!memberId) {
+    showError("Missing member ID from login session.");
+    return;
+  }
+
+  const url = `/api/GetMyRequests?memberId=${encodeURIComponent(memberId)}`;
+
+  try {
+    const res = await fetch(url);
+
+    if (!res.ok) {
+      showError("API failed: " + res.status);
+      return;
     }
 
-    const user = JSON.parse(savedUser);
+    const data = await res.json();
 
-    const memberId = user.id;
-    const email = user.email || "";
-
-    document.getElementById("memberName").textContent =
-      `${user.firstName || ""} ${user.lastName || ""}`.trim() || "Member";
-
-    document.getElementById("memberEmail").textContent = email;
-
-    async function loadRequests() {
-      const listContainer = document.getElementById("myRequestList");
-      const summaryContainer = document.getElementById("requestSummary");
-
-      if (!memberId) {
-        showError("Missing member ID from login session.");
-        return;
-      }
-
-      const url = `/api/GetMyRequests?memberId=${encodeURIComponent(memberId)}`;
-
-      try {
-        const res = await fetch(url);
-
-        if (!res.ok) {
-          showError("API failed: " + res.status);
-          return;
-        }
-
-        const data = await res.json();
-
-        if (!data.success) {
-          showError(data.error || "API returned failure.");
-          return;
-        }
-
-        const requests = data.requests || [];
-
-        if (requests.length === 0) {
-          summaryContainer.textContent = "";
-          listContainer.innerHTML =
-            `<div class="message">You do not have any requested dates yet.</div>`;
-          return;
-        }
-
-        summaryContainer.textContent =
-          `You currently have ${requests.length} requested date${requests.length === 1 ? "" : "s"}.`;
-
-        listContainer.innerHTML = requests.map(r => {
-          const status = r.status || "Requesting";
-          const statusClass = status.toLowerCase();
-
-          return `
-            <div class="request">
-              <div class="request-date">${formatDateWithDay(r.requestedDate)}</div>
-              <div class="status ${statusClass}">${status}</div>
-              <div class="request-meta">
-                Requested on ${formatDateTime(r.requestedAt)}
-              </div>
-            </div>
-          `;
-        }).join("");
-
-      } catch (err) {
-        showError("Could not load your requests.\n\n" + err.message);
-      }
+    if (!data.success) {
+      showError(data.error || "API returned failure.");
+      return;
     }
 
-    function showError(message) {
-      document.getElementById("requestSummary").textContent = "";
-      document.getElementById("myRequestList").innerHTML =
-        `<div class="error">${message}</div>`;
+    const requests = data.requests || [];
+
+    if (requests.length === 0) {
+      summaryContainer.textContent = "";
+      listContainer.innerHTML =
+        `<div class="message">You do not have any requested dates yet.</div>`;
+      return;
     }
 
-    function formatDateWithDay(value) {
-      if (!value) return "";
+    summaryContainer.textContent =
+      `You currently have ${requests.length} requested date${requests.length === 1 ? "" : "s"}.`;
 
-      const d = new Date(value);
+    listContainer.innerHTML = requests.map(r => {
+      const status = r.status || "Requesting";
+      const statusClass = status.toLowerCase();
 
-      if (isNaN(d)) {
-        return value;
-      }
+      return `
+        <div class="request">
+          <div class="request-date">${formatDateWithDay(r.requestedDate)}</div>
+          <div class="status ${statusClass}">${status}</div>
+          <div class="request-meta">
+            Requested on ${formatDateTime(r.requestedAt)}
+          </div>
+        </div>
+      `;
+    }).join("");
 
-      return d.toLocaleDateString("en-US", {
-        weekday: "long",
-        month: "long",
-        day: "numeric",
-        year: "numeric"
-      });
-    }
+  } catch (err) {
+    showError("Could not load your requests.\n\n" + err.message);
+  }
+}
 
-    function formatDateTime(value) {
-      if (!value) return "";
+// ===== HELPERS =====
+function showError(message) {
+  document.getElementById("requestSummary").textContent = "";
+  document.getElementById("myRequestList").innerHTML =
+    `<div class="error">${message}</div>`;
+}
 
-      const d = new Date(value);
+function formatDateWithDay(value) {
+  if (!value) return "—";
 
-      if (isNaN(d)) {
-        return value;
-      }
+  const d = new Date(value);
+  if (isNaN(d)) return value;
 
-      return d.toLocaleString("en-US", {
-        weekday: "long",
-        month: "numeric",
-        day: "numeric",
-        year: "numeric",
-        hour: "numeric",
-        minute: "2-digit"
-      });
-    }
+  return d.toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric"
+  });
+}
 
-    loadRequests();
-  </script>
+function formatDateTime(value) {
+  if (!value) return "—";
+
+  const d = new Date(value);
+  if (isNaN(d)) return value;
+
+  return d.toLocaleString("en-US", {
+    weekday: "long",
+    month: "numeric",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit"
+  });
+}
+
+// ===== INIT =====
+loadRequests();
+</script>
 
 </body>
 </html>
