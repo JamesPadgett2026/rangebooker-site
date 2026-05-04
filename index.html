@@ -5,51 +5,120 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
+            min-height: 100vh;
             font-family: Arial, sans-serif;
-            background-color: #111;
+            background:
+                radial-gradient(circle at top, #2b2b2b 0%, #111 45%, #050505 100%);
             color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             text-align: center;
         }
 
         .container {
-            max-width: 500px;
-            margin: auto;
-            padding: 20px;
+            width: 100%;
+            max-width: 520px;
+            padding: 22px;
+        }
+
+        .card {
+            background: rgba(20, 20, 20, 0.92);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 20px;
+            padding: 22px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
         }
 
         #splashImage {
-            max-width: 100%;
-            border-radius: 10px;
-            margin-bottom: 20px;
+            width: 100%;
+            max-height: 360px;
+            object-fit: contain;
+            border-radius: 16px;
+            margin-bottom: 18px;
             display: none;
+            background: #000;
+        }
+
+        h1 {
+            margin: 6px 0 4px;
+            font-size: 32px;
+            letter-spacing: 1px;
+        }
+
+        h2 {
+            margin: 8px 0 14px;
+            font-size: 22px;
+        }
+
+        p {
+            color: #cfcfcf;
+            line-height: 1.4;
+            margin: 0 0 18px;
         }
 
         input {
             width: 100%;
-            box-sizing: border-box;
-            padding: 12px;
-            font-size: 16px;
-            margin-top: 10px;
-            border-radius: 5px;
-            border: none;
+            padding: 14px;
+            font-size: 17px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: #1d1d1d;
+            color: white;
+            outline: none;
+            margin-top: 8px;
+        }
+
+        input:focus {
+            border-color: #d4a017;
+            box-shadow: 0 0 0 3px rgba(212, 160, 23, 0.2);
         }
 
         button {
             width: 100%;
-            padding: 12px;
-            margin-top: 10px;
-            font-size: 16px;
+            padding: 14px;
+            margin-top: 12px;
+            font-size: 17px;
+            font-weight: bold;
             border: none;
-            border-radius: 5px;
-            background-color: #0078d4;
+            border-radius: 12px;
             color: white;
             cursor: pointer;
         }
 
+        .primaryButton {
+            background: linear-gradient(135deg, #d4a017, #8a5a00);
+        }
+
+        .secondaryButton {
+            background: linear-gradient(135deg, #0078d4, #004f8c);
+        }
+
+        .logoutButton {
+            background: #333;
+            color: #ddd;
+            margin-top: 18px;
+        }
+
+        .buttonRow {
+            display: grid;
+            gap: 12px;
+        }
+
         .hidden {
             display: none;
+        }
+
+        .smallText {
+            font-size: 13px;
+            color: #999;
+            margin-top: 14px;
         }
     </style>
 </head>
@@ -57,21 +126,33 @@
 <body>
 
 <div class="container">
+    <div class="card">
 
-    <img id="splashImage" alt="Range Rats">
+        <img id="splashImage" alt="Range Rats">
 
-    <div id="loginSection">
-        <h2>Enter Password</h2>
-        <input id="passwordBox" type="password" placeholder="Password">
-        <button onclick="checkPassword()">Enter</button>
+        <h1>Range Rats</h1>
+        <p>Private access page for events and range booking.</p>
+
+        <div id="loginSection">
+            <h2>Enter Password</h2>
+            <input id="passwordBox" type="password" placeholder="Password" onkeydown="handleEnter(event)">
+            <button class="primaryButton" onclick="checkPassword()">Enter</button>
+            <div class="smallText">Access required to continue.</div>
+        </div>
+
+        <div id="contentSection" class="hidden">
+            <h2>Welcome</h2>
+            <p>Choose where you want to go.</p>
+
+            <div class="buttonRow">
+                <button class="primaryButton" onclick="goToEventPage()">Go to Event Page</button>
+                <button class="secondaryButton" onclick="goToRangeBooker()">Go to Range Booker</button>
+            </div>
+
+            <button class="logoutButton" onclick="logout()">Logout</button>
+        </div>
+
     </div>
-
-    <div id="contentSection" class="hidden">
-        <h2>Welcome to Range Rats</h2>
-        <p>This is your event page. Add photos and details here.</p>
-        <button onclick="logout()">Logout</button>
-    </div>
-
 </div>
 
 <script>
@@ -86,11 +167,18 @@ async function loadPage() {
 
         if (data.imageBase64) {
             const cleanBase64 = data.imageBase64
-                .replace(/^data:image\/[a-zA-Z]+;base64,/, "")
+                .replace(/^data:image\/[a-zA-Z0-9.+-]+;base64,/, "")
+                .replace(/^data:image;application\/octet-stream;base64,/, "")
                 .trim();
 
+            let mimeType = "image/png";
+
+            if (cleanBase64.startsWith("/9j/")) {
+                mimeType = "image/jpeg";
+            }
+
             const img = document.getElementById("splashImage");
-            img.src = "data:image/png;base64," + cleanBase64;
+            img.src = "data:" + mimeType + ";base64," + cleanBase64;
             img.style.display = "block";
         }
 
@@ -114,9 +202,23 @@ function checkPassword() {
     }
 }
 
+function handleEnter(event) {
+    if (event.key === "Enter") {
+        checkPassword();
+    }
+}
+
 function showContent() {
     document.getElementById("loginSection").classList.add("hidden");
     document.getElementById("contentSection").classList.remove("hidden");
+}
+
+function goToEventPage() {
+    window.location.href = "event.html";
+}
+
+function goToRangeBooker() {
+    window.location.href = "rangebooker.html";
 }
 
 function logout() {
