@@ -7,7 +7,7 @@
     <style>
         body {
             margin: 0;
-            font-family: Arial;
+            font-family: Arial, sans-serif;
             background-color: #111;
             color: white;
             text-align: center;
@@ -19,14 +19,16 @@
             padding: 20px;
         }
 
-        img {
+        #splashImage {
             max-width: 100%;
             border-radius: 10px;
             margin-bottom: 20px;
+            display: none;
         }
 
         input {
             width: 100%;
+            box-sizing: border-box;
             padding: 12px;
             font-size: 16px;
             margin-top: 10px;
@@ -56,31 +58,25 @@
 
 <div class="container">
 
-    <!-- Splash Image -->
-    <img id="splashImage" src="" alt="Loading...">
+    <img id="splashImage" alt="Range Rats">
 
-    <!-- Login Section -->
     <div id="loginSection">
         <h2>Enter Password</h2>
         <input id="passwordBox" type="password" placeholder="Password">
         <button onclick="checkPassword()">Enter</button>
     </div>
 
-    <!-- Protected Content -->
     <div id="contentSection" class="hidden">
         <h2>Welcome to Range Rats</h2>
         <p>This is your event page. Add photos and details here.</p>
-
         <button onclick="logout()">Logout</button>
     </div>
 
 </div>
 
 <script>
-
 let correctPassword = "";
 
-// Load data from API
 async function loadPage() {
     try {
         const res = await fetch("/api/GetSplashPagePassword");
@@ -88,20 +84,16 @@ async function loadPage() {
 
         correctPassword = data.password || "";
 
-        // Handle SharePoint image
-        if (data.image) {
-            let imageUrl = "";
+        if (data.imageBase64) {
+            const cleanBase64 = data.imageBase64
+                .replace(/^data:image\/[a-zA-Z]+;base64,/, "")
+                .trim();
 
-            if (typeof data.image === "string") {
-                imageUrl = data.image;
-            } else if (data.image.serverRelativeUrl) {
-                imageUrl = "https://tropicaltech.sharepoint.com" + data.image.serverRelativeUrl;
-            }
-
-            document.getElementById("splashImage").src = imageUrl;
+            const img = document.getElementById("splashImage");
+            img.src = "data:image/png;base64," + cleanBase64;
+            img.style.display = "block";
         }
 
-        // If already logged in, unlock page
         if (sessionStorage.getItem("eventAccess") === "true") {
             showContent();
         }
@@ -133,7 +125,6 @@ function logout() {
 }
 
 loadPage();
-
 </script>
 
 </body>
