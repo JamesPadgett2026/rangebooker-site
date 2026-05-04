@@ -7,19 +7,16 @@
     <style>
         body {
             margin: 0;
-            font-family: Arial, sans-serif;
+            font-family: Arial;
             background-color: #111;
             color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
             text-align: center;
         }
 
         .container {
-            max-width: 400px;
-            width: 90%;
+            max-width: 500px;
+            margin: auto;
+            padding: 20px;
         }
 
         img {
@@ -33,8 +30,8 @@
             padding: 12px;
             font-size: 16px;
             margin-top: 10px;
-            border: none;
             border-radius: 5px;
+            border: none;
         }
 
         button {
@@ -44,13 +41,13 @@
             font-size: 16px;
             border: none;
             border-radius: 5px;
-            cursor: pointer;
             background-color: #0078d4;
             color: white;
+            cursor: pointer;
         }
 
-        button:hover {
-            background-color: #005fa3;
+        .hidden {
+            display: none;
         }
     </style>
 </head>
@@ -59,13 +56,23 @@
 
 <div class="container">
 
+    <!-- Splash Image -->
     <img id="splashImage" src="" alt="Loading...">
 
-    <h2>Enter Password</h2>
+    <!-- Login Section -->
+    <div id="loginSection">
+        <h2>Enter Password</h2>
+        <input id="passwordBox" type="password" placeholder="Password">
+        <button onclick="checkPassword()">Enter</button>
+    </div>
 
-    <input id="passwordBox" type="password" placeholder="Password">
+    <!-- Protected Content -->
+    <div id="contentSection" class="hidden">
+        <h2>Welcome to Range Rats</h2>
+        <p>This is your event page. Add photos and details here.</p>
 
-    <button onclick="checkPassword()">Enter</button>
+        <button onclick="logout()">Logout</button>
+    </div>
 
 </div>
 
@@ -73,20 +80,15 @@
 
 let correctPassword = "";
 
-// Skip password if already logged in
-if (sessionStorage.getItem("eventAccess") === "true") {
-    window.location.href = "rangebooker.html";
-}
-
+// Load data from API
 async function loadPage() {
     try {
         const res = await fetch("/api/GetSplashPagePassword");
         const data = await res.json();
 
-        // Save password
         correctPassword = data.password || "";
 
-        // Handle SharePoint Image Column
+        // Handle SharePoint image
         if (data.image) {
             let imageUrl = "";
 
@@ -94,27 +96,40 @@ async function loadPage() {
                 imageUrl = data.image;
             } else if (data.image.serverRelativeUrl) {
                 imageUrl = "https://tropicaltech.sharepoint.com" + data.image.serverRelativeUrl;
-            } else if (data.image.fileName) {
-                imageUrl = data.image.fileName;
             }
 
             document.getElementById("splashImage").src = imageUrl;
         }
 
+        // If already logged in, unlock page
+        if (sessionStorage.getItem("eventAccess") === "true") {
+            showContent();
+        }
+
     } catch (err) {
-        console.error("Error loading splash data:", err);
+        console.error("Error loading page:", err);
     }
 }
 
-async function checkPassword() {
+function checkPassword() {
     const entered = document.getElementById("passwordBox").value.trim();
 
     if (entered === correctPassword) {
         sessionStorage.setItem("eventAccess", "true");
-        window.location.href = "rangebooker.html";
+        showContent();
     } else {
         alert("Incorrect password");
     }
+}
+
+function showContent() {
+    document.getElementById("loginSection").classList.add("hidden");
+    document.getElementById("contentSection").classList.remove("hidden");
+}
+
+function logout() {
+    sessionStorage.removeItem("eventAccess");
+    location.reload();
 }
 
 loadPage();
