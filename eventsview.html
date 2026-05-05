@@ -1,1 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Event Details</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #111;
+            color: white;
+        }
+
+        header {
+            padding: 20px;
+            text-align: center;
+            background: #000;
+            border-bottom: 2px solid #d4a017;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        .backBtn {
+            display: inline-block;
+            margin-bottom: 15px;
+            color: #f5d27a;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .mainImage {
+            width: 100%;
+            max-height: 400px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-bottom: 15px;
+        }
+
+        .title {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .date {
+            color: #f5d27a;
+            margin-bottom: 12px;
+            font-weight: bold;
+        }
+
+        .meta {
+            color: #aaa;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .description {
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+        }
+
+        .gallery img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .status {
+            text-align: center;
+            color: #ccc;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>Event Details</h1>
+</header>
+
+<div class="container">
+
+    <a href="events.html" class="backBtn">← Back to Events</a>
+
+    <div id="status" class="status">Loading event...</div>
+
+    <div id="content" style="display:none;">
+
+        <img id="mainImage" class="mainImage">
+
+        <div class="title" id="title"></div>
+        <div class="date" id="date"></div>
+        <div class="meta" id="meta"></div>
+        <div class="description" id="description"></div>
+
+        <h3>Photos</h3>
+        <div class="gallery" id="gallery"></div>
+
+    </div>
+
+</div>
+
+<script>
+function getIdFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("id");
+}
+
+async function loadEvent() {
+    const id = getIdFromUrl();
+    const status = document.getElementById("status");
+
+    if (!id) {
+        status.innerText = "No event ID provided.";
+        return;
+    }
+
+    try {
+        const res = await fetch("/api/GetEvents");
+        const data = await res.json();
+        const events = data.events || [];
+
+        const event = events.find(e => String(e.id) === String(id));
+
+        if (!event) {
+            status.innerText = "Event not found.";
+            return;
+        }
+
+        status.style.display = "none";
+        document.getElementById("content").style.display = "block";
+
+        // MAIN IMAGE
+        const mainImg = event.imageDataUrl || event.imageUrl || "";
+        const mainImageEl = document.getElementById("mainImage");
+
+        if (mainImg) {
+            mainImageEl.src = mainImg;
+            mainImageEl.style.display = "block";
+        } else {
+            mainImageEl.style.display = "none";
+        }
+
+        // TEXT
+        document.getElementById("title").innerText = event.title;
+        document.getElementById("date").innerText = event.eventDateText || "";
+        document.getElementById("description").innerText = event.description || "";
+
+        document.getElementById("meta").innerHTML =
+            (event.createdByName ? "Created by: " + event.createdByName + "<br>" : "") +
+            (event.createdDateText ? "Created: " + event.createdDateText : "");
+
+        // GALLERY (for now just reuse main image)
+        const gallery = document.getElementById("gallery");
+        gallery.innerHTML = "";
+
+        if (mainImg) {
+            const img = document.createElement("img");
+            img.src = mainImg;
+            gallery.appendChild(img);
+        }
+
+    } catch (err) {
+        console.error(err);
+        status.innerText = "Error loading event.";
+    }
+}
+
+loadEvent();
+</script>
+
+</body>
+</html>
