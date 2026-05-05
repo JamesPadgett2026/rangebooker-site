@@ -5,82 +5,278 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
             font-family: Arial, sans-serif;
-            background: #111;
+            background:
+                radial-gradient(circle at top, #2a2108 0%, #111 35%, #050505 100%);
             color: white;
         }
 
         header {
-            padding: 20px;
+            padding: 26px 15px;
             text-align: center;
             background: #000;
             border-bottom: 2px solid #d4a017;
         }
 
+        header h1 {
+            margin: 0;
+            font-size: 32px;
+        }
+
         .container {
-            max-width: 900px;
+            max-width: 1050px;
             margin: auto;
-            padding: 20px;
+            padding: 22px;
         }
 
         .backBtn {
             display: inline-block;
-            margin-bottom: 15px;
+            margin-bottom: 18px;
             color: #f5d27a;
             text-decoration: none;
             font-weight: bold;
+            font-size: 15px;
+        }
+
+        .eventCard {
+            background: rgba(20, 20, 20, 0.95);
+            border: 1px solid rgba(212, 160, 23, 0.35);
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 18px 45px rgba(0,0,0,0.6);
+        }
+
+        .heroWrap {
+            position: relative;
+            background: #000;
         }
 
         .mainImage {
             width: 100%;
-            max-height: 400px;
+            max-height: 520px;
             object-fit: cover;
-            border-radius: 12px;
-            margin-bottom: 15px;
+            display: block;
+            cursor: pointer;
+        }
+
+        .photoHint {
+            position: absolute;
+            bottom: 14px;
+            right: 14px;
+            background: rgba(0,0,0,0.75);
+            color: #f5d27a;
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .details {
+            padding: 24px;
         }
 
         .title {
-            font-size: 28px;
+            font-size: 34px;
+            font-weight: bold;
             margin-bottom: 8px;
         }
 
         .date {
             color: #f5d27a;
-            margin-bottom: 12px;
+            font-size: 17px;
+            margin-bottom: 14px;
             font-weight: bold;
         }
 
         .meta {
-            color: #aaa;
-            margin-bottom: 15px;
+            color: #bbb;
+            margin-bottom: 18px;
             font-size: 14px;
+            line-height: 1.5;
         }
 
         .description {
-            line-height: 1.5;
-            margin-bottom: 20px;
+            line-height: 1.6;
+            font-size: 16px;
+            margin-bottom: 26px;
+        }
+
+        .sectionTitle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .sectionTitle h3 {
+            margin: 0;
+            font-size: 22px;
+        }
+
+        .photoCount {
+            color: #aaa;
+            font-size: 14px;
         }
 
         .gallery {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 10px;
+            grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+            gap: 14px;
         }
 
-        .gallery img {
-            width: 100%;
-            height: 120px;
-            object-fit: cover;
-            border-radius: 10px;
+        .galleryItem {
+            position: relative;
+            overflow: hidden;
+            border-radius: 14px;
+            background: #000;
+            border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 8px 18px rgba(0,0,0,0.35);
             cursor: pointer;
+        }
+
+        .galleryItem img {
+            width: 100%;
+            height: 145px;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.25s ease, opacity 0.25s ease;
+        }
+
+        .galleryItem:hover img {
+            transform: scale(1.06);
+            opacity: 0.85;
+        }
+
+        .galleryItem::after {
+            content: "View";
+            position: absolute;
+            inset: auto 10px 10px auto;
+            background: rgba(0,0,0,0.75);
+            color: #f5d27a;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 6px 9px;
+            border-radius: 999px;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+
+        .galleryItem:hover::after {
+            opacity: 1;
         }
 
         .status {
             text-align: center;
             color: #ccc;
             margin-top: 40px;
+        }
+
+        .lightbox {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            inset: 0;
+            background: rgba(0,0,0,0.95);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .lightbox.show {
+            display: flex;
+        }
+
+        .lightbox img {
+            max-width: 96vw;
+            max-height: 86vh;
+            object-fit: contain;
+            border-radius: 12px;
+            box-shadow: 0 0 35px rgba(0,0,0,0.9);
+        }
+
+        .closeBtn,
+        .navBtn {
+            position: fixed;
+            background: rgba(255,255,255,0.12);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 999px;
+            cursor: pointer;
+            font-weight: bold;
+            backdrop-filter: blur(6px);
+        }
+
+        .closeBtn {
+            top: 18px;
+            right: 18px;
+            width: 46px;
+            height: 46px;
+            font-size: 28px;
+        }
+
+        .navBtn {
+            top: 50%;
+            transform: translateY(-50%);
+            width: 48px;
+            height: 58px;
+            font-size: 34px;
+        }
+
+        .prevBtn {
+            left: 18px;
+        }
+
+        .nextBtn {
+            right: 18px;
+        }
+
+        .imageNumber {
+            position: fixed;
+            bottom: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #f5d27a;
+            background: rgba(0,0,0,0.7);
+            padding: 8px 14px;
+            border-radius: 999px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 650px) {
+            .container {
+                padding: 14px;
+            }
+
+            .title {
+                font-size: 27px;
+            }
+
+            .details {
+                padding: 18px;
+            }
+
+            .gallery {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            .galleryItem img {
+                height: 120px;
+            }
+
+            .navBtn {
+                width: 42px;
+                height: 50px;
+                font-size: 28px;
+            }
         }
     </style>
 </head>
@@ -99,25 +295,92 @@
 
     <div id="content" style="display:none;">
 
-        <img id="mainImage" class="mainImage">
+        <div class="eventCard">
 
-        <div class="title" id="title"></div>
-        <div class="date" id="date"></div>
-        <div class="meta" id="meta"></div>
-        <div class="description" id="description"></div>
+            <div class="heroWrap" id="heroWrap">
+                <img id="mainImage" class="mainImage">
+                <div class="photoHint" id="photoHint">Click photo to enlarge</div>
+            </div>
 
-        <h3>Photos</h3>
-        <div class="gallery" id="gallery"></div>
+            <div class="details">
+                <div class="title" id="title"></div>
+                <div class="date" id="date"></div>
+                <div class="meta" id="meta"></div>
+                <div class="description" id="description"></div>
+
+                <div class="sectionTitle">
+                    <h3>Photos</h3>
+                    <div class="photoCount" id="photoCount"></div>
+                </div>
+
+                <div class="gallery" id="gallery"></div>
+            </div>
+
+        </div>
 
     </div>
 
 </div>
 
+<div class="lightbox" id="lightbox">
+    <button class="closeBtn" onclick="closeLightbox()">×</button>
+    <button class="navBtn prevBtn" onclick="changePhoto(-1)">‹</button>
+    <img id="lightboxImage">
+    <button class="navBtn nextBtn" onclick="changePhoto(1)">›</button>
+    <div class="imageNumber" id="imageNumber"></div>
+</div>
+
 <script>
+let allImages = [];
+let currentImageIndex = 0;
+
 function getIdFromUrl() {
     const params = new URLSearchParams(window.location.search);
     return params.get("id");
 }
+
+function openLightbox(index) {
+    if (!allImages || allImages.length === 0) return;
+
+    currentImageIndex = index;
+    document.getElementById("lightboxImage").src = allImages[currentImageIndex];
+    document.getElementById("imageNumber").innerText =
+        (currentImageIndex + 1) + " of " + allImages.length;
+
+    document.getElementById("lightbox").classList.add("show");
+}
+
+function closeLightbox() {
+    document.getElementById("lightbox").classList.remove("show");
+}
+
+function changePhoto(direction) {
+    if (!allImages || allImages.length === 0) return;
+
+    currentImageIndex += direction;
+
+    if (currentImageIndex < 0) {
+        currentImageIndex = allImages.length - 1;
+    }
+
+    if (currentImageIndex >= allImages.length) {
+        currentImageIndex = 0;
+    }
+
+    openLightbox(currentImageIndex);
+}
+
+document.addEventListener("keydown", function(e) {
+    if (e.key === "Escape") closeLightbox();
+    if (e.key === "ArrowLeft") changePhoto(-1);
+    if (e.key === "ArrowRight") changePhoto(1);
+});
+
+document.getElementById("lightbox").addEventListener("click", function(e) {
+    if (e.target.id === "lightbox") {
+        closeLightbox();
+    }
+});
 
 async function loadEvent() {
     const id = getIdFromUrl();
@@ -143,21 +406,30 @@ async function loadEvent() {
         status.style.display = "none";
         document.getElementById("content").style.display = "block";
 
-        // MAIN IMAGE
-        const mainImg =
-    event.imageDataUrl ||
-    (event.images && event.images.length > 0 ? event.images[0] : "");
-        const mainImageEl = document.getElementById("mainImage");
+        allImages = [];
 
-        if (mainImg) {
-            mainImageEl.src = mainImg;
-            mainImageEl.style.display = "block";
-        } else {
-            mainImageEl.style.display = "none";
+        if (event.images && event.images.length > 0) {
+            allImages = event.images;
+        } else if (event.imageDataUrl) {
+            allImages = [event.imageDataUrl];
         }
 
-        // TEXT
-        document.getElementById("title").innerText = event.title;
+        const mainImageEl = document.getElementById("mainImage");
+        const heroWrap = document.getElementById("heroWrap");
+        const photoHint = document.getElementById("photoHint");
+
+        if (allImages.length > 0) {
+            mainImageEl.src = allImages[0];
+            heroWrap.style.display = "block";
+            mainImageEl.onclick = function () {
+                openLightbox(0);
+            };
+        } else {
+            heroWrap.style.display = "none";
+            photoHint.style.display = "none";
+        }
+
+        document.getElementById("title").innerText = event.title || "Untitled Event";
         document.getElementById("date").innerText = event.eventDateText || "";
         document.getElementById("description").innerText = event.description || "";
 
@@ -165,24 +437,33 @@ async function loadEvent() {
             (event.createdByName ? "Created by: " + event.createdByName + "<br>" : "") +
             (event.createdDateText ? "Created: " + event.createdDateText : "");
 
-        // GALLERY (for now just reuse main image)
-    const gallery = document.getElementById("gallery");
-gallery.innerHTML = "";
+        const gallery = document.getElementById("gallery");
+        const photoCount = document.getElementById("photoCount");
 
-if (event.images && event.images.length > 0) {
-    event.images.forEach(src => {
-        const img = document.createElement("img");
-        img.src = src;
-        img.onclick = function () {
-            mainImageEl.src = src;
-            mainImageEl.style.display = "block";
-            window.scrollTo({ top: 0, behavior: "smooth" });
-        };
-        gallery.appendChild(img);
-    });
-} else {
-    gallery.innerHTML = "<div class='status'>No photos found for this event.</div>";
-}
+        gallery.innerHTML = "";
+        photoCount.innerText = allImages.length === 1
+            ? "1 photo"
+            : allImages.length + " photos";
+
+        if (allImages.length > 0) {
+            allImages.forEach((src, index) => {
+                const item = document.createElement("div");
+                item.className = "galleryItem";
+
+                const img = document.createElement("img");
+                img.src = src;
+
+                item.onclick = function () {
+                    openLightbox(index);
+                };
+
+                item.appendChild(img);
+                gallery.appendChild(item);
+            });
+        } else {
+            gallery.innerHTML = "<div class='status'>No photos found for this event.</div>";
+            photoCount.innerText = "0 photos";
+        }
 
     } catch (err) {
         console.error(err);
