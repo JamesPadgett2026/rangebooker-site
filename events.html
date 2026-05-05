@@ -35,7 +35,7 @@
         }
 
         .container {
-            max-width: 1100px;
+            max-width: 900px;
             margin: auto;
             padding: 22px;
         }
@@ -63,71 +63,71 @@
             margin: 25px 0;
         }
 
-        .eventsGrid {
+        .eventsList {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 22px;
+            gap: 16px;
         }
 
-        .eventCard {
+        .eventRow {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            gap: 16px;
             background: #1c1c1c;
             border: 1px solid #333;
-            border-radius: 18px;
-            overflow: hidden;
-            box-shadow: 0 14px 35px rgba(0,0,0,0.45);
+            border-radius: 16px;
+            padding: 14px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.35);
         }
 
-        .eventImage {
-            width: 100%;
-            height: 210px;
+        .eventThumb {
+            width: 120px;
+            height: 90px;
             object-fit: cover;
-            display: block;
+            border-radius: 12px;
             background: #2a2a2a;
         }
 
         .noImage {
-            width: 100%;
-            height: 210px;
+            width: 120px;
+            height: 90px;
+            border-radius: 12px;
             background: linear-gradient(135deg, #2a2a2a, #111);
             display: flex;
             align-items: center;
             justify-content: center;
             color: #888;
+            font-size: 12px;
             font-weight: bold;
-        }
-
-        .eventBody {
-            padding: 18px;
+            text-align: center;
         }
 
         .eventDate {
             color: #f5d27a;
             font-weight: bold;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
+            font-size: 14px;
         }
 
         .eventTitle {
-            font-size: 23px;
-            margin: 0 0 10px;
+            margin: 0 0 8px;
+            font-size: 22px;
         }
 
         .eventDescription {
             color: #ccc;
-            line-height: 1.45;
-            margin-bottom: 14px;
+            line-height: 1.4;
+            margin-bottom: 10px;
         }
 
-        .eventInfo {
-            color: #aaa;
-            font-size: 14px;
-            line-height: 1.5;
+        .eventMeta {
+            color: #999;
+            font-size: 13px;
+            margin-bottom: 12px;
         }
 
         .eventButton {
-            display: block;
-            margin-top: 16px;
-            padding: 12px;
-            text-align: center;
+            display: inline-block;
+            padding: 10px 16px;
             color: white;
             text-decoration: none;
             font-weight: bold;
@@ -141,6 +141,18 @@
             color: #777;
             font-size: 14px;
         }
+
+        @media (max-width: 650px) {
+            .eventRow {
+                grid-template-columns: 1fr;
+            }
+
+            .eventThumb,
+            .noImage {
+                width: 100%;
+                height: 190px;
+            }
+        }
     </style>
 </head>
 
@@ -148,7 +160,7 @@
 
 <header>
     <h1>Range Rats Events</h1>
-    <p>Upcoming events pulled from SharePoint</p>
+    <p>Select an event to view details and photos</p>
 </header>
 
 <div class="container">
@@ -160,7 +172,7 @@
 
     <div id="status">Loading events...</div>
 
-    <div id="eventsGrid" class="eventsGrid"></div>
+    <div id="eventsList" class="eventsList"></div>
 
 </div>
 
@@ -171,7 +183,7 @@
 <script>
 async function loadEvents() {
     const status = document.getElementById("status");
-    const grid = document.getElementById("eventsGrid");
+    const list = document.getElementById("eventsList");
 
     try {
         const res = await fetch("/api/GetEvents");
@@ -183,7 +195,7 @@ async function loadEvents() {
         const data = await res.json();
         const events = data.events || [];
 
-        grid.innerHTML = "";
+        list.innerHTML = "";
 
         if (events.length === 0) {
             status.innerText = "No events found.";
@@ -193,41 +205,53 @@ async function loadEvents() {
         status.style.display = "none";
 
         events.forEach(eventItem => {
-            const card = document.createElement("div");
-            card.className = "eventCard";
+            const row = document.createElement("div");
+            row.className = "eventRow";
+
+            const imageSource = eventItem.imageDataUrl || eventItem.imageUrl || "";
 
             let imageHtml = "";
 
-            if (eventItem.imageDataUrl) {
-                imageHtml = `<img class="eventImage" src="${eventItem.imageDataUrl}" alt="${escapeHtml(eventItem.title)}">`;
+            if (imageSource) {
+                imageHtml = `
+                    <img class="eventThumb"
+                         src="${imageSource}"
+                         alt="${escapeHtml(eventItem.title)}">
+                `;
             } else {
-                imageHtml = `<div class="noImage">No Event Photo</div>`;
+                imageHtml = `<div class="noImage">No Photo</div>`;
             }
 
-            card.innerHTML = `
-                ${imageHtml}
+            row.innerHTML = `
+                <div>
+                    ${imageHtml}
+                </div>
 
-                <div class="eventBody">
-                    <div class="eventDate">${escapeHtml(eventItem.eventDateText || "Date TBD")}</div>
-                    <h2 class="eventTitle">${escapeHtml(eventItem.title || "Untitled Event")}</h2>
+                <div>
+                    <div class="eventDate">
+                        ${escapeHtml(eventItem.eventDateText || "Date TBD")}
+                    </div>
+
+                    <h2 class="eventTitle">
+                        ${escapeHtml(eventItem.title || "Untitled Event")}
+                    </h2>
 
                     <div class="eventDescription">
                         ${escapeHtml(eventItem.description || "No description available.")}
                     </div>
 
-                    <div class="eventInfo">
-                        ${eventItem.time ? "Time: " + escapeHtml(eventItem.time) + "<br>" : ""}
-                        ${eventItem.location ? "Location: " + escapeHtml(eventItem.location) + "<br>" : ""}
+                    <div class="eventMeta">
+                        ${eventItem.createdByName ? "Created by: " + escapeHtml(eventItem.createdByName) + "<br>" : ""}
                         Event ID: ${escapeHtml(String(eventItem.id))}
                     </div>
 
-                    <a class="eventButton" href="eventdetails.html?id=${encodeURIComponent(eventItem.id)}">
+                    <a class="eventButton" href="eventsview.html?id=${encodeURIComponent(eventItem.id)}">
                         View Event
                     </a>
                 </div>
             `;
 
-            grid.appendChild(card);
+            list.appendChild(row);
         });
 
     } catch (err) {
