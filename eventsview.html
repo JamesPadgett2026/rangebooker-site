@@ -12,13 +12,12 @@
         body {
             margin: 0;
             font-family: Arial, sans-serif;
-            background:
-                radial-gradient(circle at top, #2a2108 0%, #111 35%, #050505 100%);
+            background: radial-gradient(circle at top, #2a2108 0%, #111 35%, #050505 100%);
             color: white;
         }
 
         header {
-            padding: 26px 15px;
+            padding: 24px 15px;
             text-align: center;
             background: #000;
             border-bottom: 2px solid #d4a017;
@@ -41,11 +40,10 @@
             color: #f5d27a;
             text-decoration: none;
             font-weight: bold;
-            font-size: 15px;
         }
 
         .eventCard {
-            background: rgba(20, 20, 20, 0.95);
+            background: rgba(20, 20, 20, 0.96);
             border: 1px solid rgba(212, 160, 23, 0.35);
             border-radius: 18px;
             overflow: hidden;
@@ -55,20 +53,23 @@
         .heroWrap {
             position: relative;
             background: #000;
+            text-align: center;
+            padding: 14px;
         }
 
         .mainImage {
             width: 100%;
-            max-height: 520px;
+            max-height: 360px;
             object-fit: cover;
             display: block;
             cursor: pointer;
+            border-radius: 12px;
         }
 
         .photoHint {
             position: absolute;
-            bottom: 14px;
-            right: 14px;
+            bottom: 24px;
+            right: 24px;
             background: rgba(0,0,0,0.75);
             color: #f5d27a;
             padding: 8px 12px;
@@ -157,7 +158,8 @@
         .galleryItem::after {
             content: "View";
             position: absolute;
-            inset: auto 10px 10px auto;
+            right: 10px;
+            bottom: 10px;
             background: rgba(0,0,0,0.75);
             color: #f5d27a;
             font-size: 12px;
@@ -201,32 +203,36 @@
             box-shadow: 0 0 35px rgba(0,0,0,0.9);
         }
 
-        .closeBtn,
-        .navBtn {
-            position: fixed;
-            background: rgba(255,255,255,0.12);
-            color: white;
-            border: 1px solid rgba(255,255,255,0.25);
-            border-radius: 999px;
-            cursor: pointer;
-            font-weight: bold;
-            backdrop-filter: blur(6px);
-        }
-
         .closeBtn {
+            position: fixed;
             top: 18px;
             right: 18px;
             width: 46px;
             height: 46px;
-            font-size: 28px;
+            font-size: 18px;
+            background: rgba(255,255,255,0.15);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.35);
+            border-radius: 999px;
+            cursor: pointer;
+            font-weight: bold;
+            z-index: 10001;
         }
 
         .navBtn {
+            position: fixed;
             top: 50%;
             transform: translateY(-50%);
-            width: 48px;
-            height: 58px;
-            font-size: 34px;
+            width: 74px;
+            height: 44px;
+            font-size: 15px;
+            background: rgba(255,255,255,0.15);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.35);
+            border-radius: 999px;
+            cursor: pointer;
+            font-weight: bold;
+            z-index: 10001;
         }
 
         .prevBtn {
@@ -235,6 +241,12 @@
 
         .nextBtn {
             right: 18px;
+        }
+
+        .closeBtn:hover,
+        .navBtn:hover {
+            background: rgba(245,210,122,0.25);
+            border-color: #f5d27a;
         }
 
         .imageNumber {
@@ -255,12 +267,20 @@
                 padding: 14px;
             }
 
+            header h1 {
+                font-size: 27px;
+            }
+
             .title {
                 font-size: 27px;
             }
 
             .details {
                 padding: 18px;
+            }
+
+            .mainImage {
+                max-height: 280px;
             }
 
             .gallery {
@@ -272,10 +292,18 @@
                 height: 120px;
             }
 
+            .prevBtn {
+                left: 8px;
+            }
+
+            .nextBtn {
+                right: 8px;
+            }
+
             .navBtn {
-                width: 42px;
-                height: 50px;
-                font-size: 28px;
+                width: 64px;
+                height: 42px;
+                font-size: 13px;
             }
         }
     </style>
@@ -289,7 +317,7 @@
 
 <div class="container">
 
-    <a href="events.html" class="backBtn">← Back to Events</a>
+    <a href="events.html" class="backBtn">Back to Events</a>
 
     <div id="status" class="status">Loading event...</div>
 
@@ -298,7 +326,7 @@
         <div class="eventCard">
 
             <div class="heroWrap" id="heroWrap">
-                <img id="mainImage" class="mainImage">
+                <img id="mainImage" class="mainImage" alt="Event photo">
                 <div class="photoHint" id="photoHint">Click photo to enlarge</div>
             </div>
 
@@ -323,10 +351,10 @@
 </div>
 
 <div class="lightbox" id="lightbox">
-    <button class="closeBtn" onclick="closeLightbox()">×</button>
-    <button class="navBtn prevBtn" onclick="changePhoto(-1)">‹</button>
-    <img id="lightboxImage">
-    <button class="navBtn nextBtn" onclick="changePhoto(1)">›</button>
+    <button class="closeBtn" type="button" id="closeBtn">X</button>
+    <button class="navBtn prevBtn" type="button" id="prevBtn">Prev</button>
+    <img id="lightboxImage" alt="Enlarged event photo">
+    <button class="navBtn nextBtn" type="button" id="nextBtn">Next</button>
     <div class="imageNumber" id="imageNumber"></div>
 </div>
 
@@ -339,13 +367,19 @@ function getIdFromUrl() {
     return params.get("id");
 }
 
+function updateLightboxImage() {
+    if (!allImages || allImages.length === 0) return;
+
+    document.getElementById("lightboxImage").src = allImages[currentImageIndex];
+    document.getElementById("imageNumber").innerText =
+        (currentImageIndex + 1) + " of " + allImages.length;
+}
+
 function openLightbox(index) {
     if (!allImages || allImages.length === 0) return;
 
     currentImageIndex = index;
-    document.getElementById("lightboxImage").src = allImages[currentImageIndex];
-    document.getElementById("imageNumber").innerText =
-        (currentImageIndex + 1) + " of " + allImages.length;
+    updateLightboxImage();
 
     document.getElementById("lightbox").classList.add("show");
 }
@@ -357,7 +391,7 @@ function closeLightbox() {
 function changePhoto(direction) {
     if (!allImages || allImages.length === 0) return;
 
-    currentImageIndex += direction;
+    currentImageIndex = currentImageIndex + direction;
 
     if (currentImageIndex < 0) {
         currentImageIndex = allImages.length - 1;
@@ -367,18 +401,45 @@ function changePhoto(direction) {
         currentImageIndex = 0;
     }
 
-    openLightbox(currentImageIndex);
+    updateLightboxImage();
 }
 
-document.addEventListener("keydown", function(e) {
-    if (e.key === "Escape") closeLightbox();
-    if (e.key === "ArrowLeft") changePhoto(-1);
-    if (e.key === "ArrowRight") changePhoto(1);
+document.getElementById("closeBtn").addEventListener("click", function(e) {
+    e.stopPropagation();
+    closeLightbox();
+});
+
+document.getElementById("prevBtn").addEventListener("click", function(e) {
+    e.stopPropagation();
+    changePhoto(-1);
+});
+
+document.getElementById("nextBtn").addEventListener("click", function(e) {
+    e.stopPropagation();
+    changePhoto(1);
 });
 
 document.getElementById("lightbox").addEventListener("click", function(e) {
     if (e.target.id === "lightbox") {
         closeLightbox();
+    }
+});
+
+document.addEventListener("keydown", function(e) {
+    const lightboxOpen = document.getElementById("lightbox").classList.contains("show");
+
+    if (!lightboxOpen) return;
+
+    if (e.key === "Escape") {
+        closeLightbox();
+    }
+
+    if (e.key === "ArrowLeft") {
+        changePhoto(-1);
+    }
+
+    if (e.key === "ArrowRight") {
+        changePhoto(1);
     }
 });
 
@@ -421,6 +482,8 @@ async function loadEvent() {
         if (allImages.length > 0) {
             mainImageEl.src = allImages[0];
             heroWrap.style.display = "block";
+            photoHint.style.display = "block";
+
             mainImageEl.onclick = function () {
                 openLightbox(0);
             };
@@ -441,17 +504,21 @@ async function loadEvent() {
         const photoCount = document.getElementById("photoCount");
 
         gallery.innerHTML = "";
-        photoCount.innerText = allImages.length === 1
-            ? "1 photo"
-            : allImages.length + " photos";
+
+        if (allImages.length === 1) {
+            photoCount.innerText = "1 photo";
+        } else {
+            photoCount.innerText = allImages.length + " photos";
+        }
 
         if (allImages.length > 0) {
-            allImages.forEach((src, index) => {
+            allImages.forEach(function(src, index) {
                 const item = document.createElement("div");
                 item.className = "galleryItem";
 
                 const img = document.createElement("img");
                 img.src = src;
+                img.alt = "Event photo " + (index + 1);
 
                 item.onclick = function () {
                     openLightbox(index);
