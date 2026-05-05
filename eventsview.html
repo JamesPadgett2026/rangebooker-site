@@ -144,7 +144,9 @@ async function loadEvent() {
         document.getElementById("content").style.display = "block";
 
         // MAIN IMAGE
-        const mainImg = event.imageDataUrl || event.imageUrl || "";
+        const mainImg =
+    event.imageDataUrl ||
+    (event.images && event.images.length > 0 ? event.images[0] : "");
         const mainImageEl = document.getElementById("mainImage");
 
         if (mainImg) {
@@ -164,14 +166,23 @@ async function loadEvent() {
             (event.createdDateText ? "Created: " + event.createdDateText : "");
 
         // GALLERY (for now just reuse main image)
-        const gallery = document.getElementById("gallery");
-        gallery.innerHTML = "";
+    const gallery = document.getElementById("gallery");
+gallery.innerHTML = "";
 
-        if (mainImg) {
-            const img = document.createElement("img");
-            img.src = mainImg;
-            gallery.appendChild(img);
-        }
+if (event.images && event.images.length > 0) {
+    event.images.forEach(src => {
+        const img = document.createElement("img");
+        img.src = src;
+        img.onclick = function () {
+            mainImageEl.src = src;
+            mainImageEl.style.display = "block";
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        };
+        gallery.appendChild(img);
+    });
+} else {
+    gallery.innerHTML = "<div class='status'>No photos found for this event.</div>";
+}
 
     } catch (err) {
         console.error(err);
