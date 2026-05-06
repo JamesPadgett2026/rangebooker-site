@@ -192,8 +192,13 @@ async function loadEvents() {
             throw new Error("API returned " + res.status);
         }
 
-        const data = await res.json();
-        const events = data.events || [];
+       const data = await res.json();
+const events = data.events || [];
+
+// OLDEST TO NEWEST
+events.sort((a, b) => {
+    return new Date(a.eventDate) - new Date(b.eventDate);
+});
 
         list.innerHTML = "";
 
