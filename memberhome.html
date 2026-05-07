@@ -76,6 +76,22 @@
     background: #16a34a;
   }
 
+  .btn.orange {
+    background: #ea580c;
+  }
+
+  .btn.orange:hover {
+    background: #c2410c;
+  }
+
+  .btn.purple {
+    background: #7c3aed;
+  }
+
+  .btn.purple:hover {
+    background: #6d28d9;
+  }
+
   .btn.logout {
     background: #dc2626;
   }
@@ -99,18 +115,39 @@
     <div class="title">🎯 RangeBooker</div>
 
     <h1 id="welcome"></h1>
-    <div class="sub">Manage your range access, view availability, and track your activity.</div>
+
+    <div class="sub">
+      Manage your range access, view availability, and track your activity.
+    </div>
 
     <div class="actions">
-      <!-- FIXED calendar link -->
-      <a class="btn" href="/calendar.html">📅 View Calendar</a>
 
-      <!-- NEW stats button -->
-      <a class="btn secondary" href="/mystats.html">📊 My Stats</a>
+      <!-- CALENDAR -->
+      <a class="btn" href="/calendar.html">
+        📅 View Calendar
+      </a>
+
+      <!-- MY STATS -->
+      <a class="btn secondary" href="/mystats.html">
+        📊 My Stats
+      </a>
+
+      <!-- BULLETIN BOARD -->
+      <a class="btn orange" href="/bulletinboard.html">
+        📌 Bulletin Board
+      </a>
+
+      <!-- SETTINGS -->
+      <a class="btn purple" href="/mysettings.html">
+        ⚙ My Settings
+      </a>
+
     </div>
 
     <div class="footer">
-      <a class="btn logout" href="#" onclick="logout()">Logout</a>
+      <a class="btn logout" href="#" onclick="logout()">
+        Logout
+      </a>
     </div>
 
   </div>
@@ -126,7 +163,10 @@ if (!user) {
 const parsed = JSON.parse(user);
 
 document.getElementById("welcome").innerText =
-  "Welcome " + (parsed.firstName || "") + " " + (parsed.lastName || "");
+  "Welcome " +
+  (parsed.firstName || "") +
+  " " +
+  (parsed.lastName || "");
 
 function logout() {
   sessionStorage.removeItem("rangebookerUser");
