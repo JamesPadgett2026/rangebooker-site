@@ -20,9 +20,15 @@
     margin: 0 auto;
   }
 
-  .back-button {
-    display: inline-block;
+  .top-buttons {
+    display: flex;
+    gap: 10px;
     margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .nav-button {
+    display: inline-block;
     padding: 10px 16px;
     background: #2563eb;
     color: white;
@@ -32,8 +38,16 @@
     font-size: 14px;
   }
 
-  .back-button:hover {
+  .nav-button:hover {
     background: #1d4ed8;
+  }
+
+  .settings-button {
+    background: #374151;
+  }
+
+  .settings-button:hover {
+    background: #111827;
   }
 
   .card {
@@ -134,7 +148,10 @@
 
 <div class="container">
 
-  <a href="memberhome.html" class="back-button">← Back to Home</a>
+  <div class="top-buttons">
+    <a href="memberhome.html" class="nav-button">← Back to Home</a>
+    <a href="mysettings.html" class="nav-button settings-button">⚙ My Settings</a>
+  </div>
 
   <div class="card">
     <h1>My Stats</h1>
