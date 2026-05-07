@@ -92,6 +92,22 @@
     cursor: not-allowed;
   }
 
+  .secondary-button {
+    background: #374151;
+  }
+
+  .secondary-button:hover {
+    background: #111827;
+  }
+
+  .danger-button {
+    background: #dc2626;
+  }
+
+  .danger-button:hover {
+    background: #b91c1c;
+  }
+
   .message {
     margin-top: 14px;
     padding: 14px;
@@ -117,6 +133,10 @@
     font-size: 14px;
     margin-top: 8px;
   }
+
+  .hidden {
+    display: none;
+  }
 </style>
 </head>
 
@@ -133,7 +153,7 @@
     <h1>My Settings</h1>
 
     <p class="hint">
-      Update your password or preferred contact method.
+      Update your preferred contact method.
     </p>
 
     <label for="preferredContact">Preferred Contact Method</label>
@@ -144,19 +164,40 @@
       <option value="None">None</option>
     </select>
 
-    <hr style="margin:24px 0; border:none; border-top:1px solid #e5e7eb;">
+    <button id="saveContactButton" onclick="saveContactMethod()">Save Contact Method</button>
 
-    <h2>Change Password</h2>
+    <div id="contactMessageBox" class="message"></div>
+  </div>
 
-    <label for="newPassword">New Password</label>
-    <input id="newPassword" type="password" placeholder="Enter new password" />
+  <div class="card">
+    <h2>Password</h2>
 
-    <label for="confirmPassword">Confirm New Password</label>
-    <input id="confirmPassword" type="password" placeholder="Confirm new password" />
+    <p class="hint">
+      For security, you will need to enter your current password before changing it.
+    </p>
 
-    <button id="saveButton" onclick="saveSettings()">Save Settings</button>
+    <button id="showPasswordButton" class="secondary-button" onclick="showPasswordCard()">
+      Change Password
+    </button>
 
-    <div id="messageBox" class="message"></div>
+    <div id="passwordFields" class="hidden">
+
+      <label for="currentPassword">Current Password</label>
+      <input id="currentPassword" type="password" placeholder="Enter current password" />
+
+      <label for="newPassword">New Password</label>
+      <input id="newPassword" type="password" placeholder="Enter new password" />
+
+      <label for="confirmPassword">Confirm New Password</label>
+      <input id="confirmPassword" type="password" placeholder="Confirm new password" />
+
+      <button id="savePasswordButton" onclick="savePassword()">Save New Password</button>
+
+      <button class="danger-button" onclick="hidePasswordCard()">Cancel</button>
+
+    </div>
+
+    <div id="passwordMessageBox" class="message"></div>
   </div>
 
 </div>
@@ -171,98 +212,167 @@ if (!savedUser) {
 const user = JSON.parse(savedUser);
 
 const memberId = user.id;
-const email = user.email || "";
 
 document.getElementById("preferredContact").value =
   user.preferredContactChoice ||
   user.PreferredContactChoice ||
-  "";
+  "None";
 
-async function saveSettings() {
-  const saveButton = document.getElementById("saveButton");
+function showPasswordCard() {
+  document.getElementById("passwordFields").classList.remove("hidden");
+  document.getElementById("showPasswordButton").classList.add("hidden");
+  hideMessage("passwordMessageBox");
+}
+
+function hidePasswordCard() {
+  document.getElementById("passwordFields").classList.add("hidden");
+  document.getElementById("showPasswordButton").classList.remove("hidden");
+
+  document.getElementById("currentPassword").value = "";
+  document.getElementById("newPassword").value = "";
+  document.getElementById("confirmPassword").value = "";
+
+  hideMessage("passwordMessageBox");
+}
+
+async function saveContactMethod() {
+  const saveButton = document.getElementById("saveContactButton");
   const preferredContact = document.getElementById("preferredContact").value;
-  const newPassword = document.getElementById("newPassword").value.trim();
-  const confirmPassword = document.getElementById("confirmPassword").value.trim();
 
-  hideMessage();
+  hideMessage("contactMessageBox");
 
   if (!memberId) {
-    showMessage("Missing member ID. Please log out and log back in.", "error");
+    showMessage("contactMessageBox", "Missing member ID. Please log out and log back in.", "error");
     return;
   }
 
   if (!preferredContact) {
-    showMessage("Please choose a preferred contact method.", "error");
+    showMessage("contactMessageBox", "Please choose a preferred contact method.", "error");
     return;
-  }
-
-  if (newPassword || confirmPassword) {
-    if (newPassword.length < 6) {
-      showMessage("Password should be at least 6 characters.", "error");
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      showMessage("The passwords do not match.", "error");
-      return;
-    }
   }
 
   saveButton.disabled = true;
   saveButton.textContent = "Saving...";
 
   try {
-    const body = {
-      memberId: memberId,
-      preferredContactChoice: preferredContact
-    };
-
-    if (newPassword) {
-      body.newPassword = newPassword;
-    }
-
     const res = await fetch("/api/UpdateMySettings", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(body)
+      body: JSON.stringify({
+        memberId: memberId,
+        preferredContactChoice: preferredContact
+      })
     });
 
     const data = await res.json();
 
     if (!res.ok || !data.success) {
-      showMessage(data.error || "Settings update failed.", "error");
+      showMessage("contactMessageBox", data.error || "Contact method update failed.", "error");
       return;
     }
 
     user.preferredContactChoice = preferredContact;
     user.PreferredContactChoice = preferredContact;
-
     sessionStorage.setItem("rangebookerUser", JSON.stringify(user));
 
-    document.getElementById("newPassword").value = "";
-    document.getElementById("confirmPassword").value = "";
-
-    showMessage("Settings saved successfully.", "success");
+    showMessage("contactMessageBox", "Contact method saved successfully.", "success");
 
   } catch (err) {
-    showMessage("Could not save settings.\n\n" + err.message, "error");
+    showMessage("contactMessageBox", "Could not save contact method.\n\n" + err.message, "error");
   } finally {
     saveButton.disabled = false;
-    saveButton.textContent = "Save Settings";
+    saveButton.textContent = "Save Contact Method";
   }
 }
 
-function showMessage(message, type) {
-  const box = document.getElementById("messageBox");
+async function savePassword() {
+  const saveButton = document.getElementById("savePasswordButton");
+
+  const preferredContact =
+    document.getElementById("preferredContact").value || "None";
+
+  const currentPassword =
+    document.getElementById("currentPassword").value.trim();
+
+  const newPassword =
+    document.getElementById("newPassword").value.trim();
+
+  const confirmPassword =
+    document.getElementById("confirmPassword").value.trim();
+
+  hideMessage("passwordMessageBox");
+
+  if (!memberId) {
+    showMessage("passwordMessageBox", "Missing member ID. Please log out and log back in.", "error");
+    return;
+  }
+
+  if (!currentPassword) {
+    showMessage("passwordMessageBox", "Please enter your current password.", "error");
+    return;
+  }
+
+  if (newPassword.length < 6) {
+    showMessage("passwordMessageBox", "New password should be at least 6 characters.", "error");
+    return;
+  }
+
+  if (newPassword !== confirmPassword) {
+    showMessage("passwordMessageBox", "The new passwords do not match.", "error");
+    return;
+  }
+
+  if (currentPassword === newPassword) {
+    showMessage("passwordMessageBox", "The new password must be different from the current password.", "error");
+    return;
+  }
+
+  saveButton.disabled = true;
+  saveButton.textContent = "Saving...";
+
+  try {
+    const res = await fetch("/api/UpdateMySettings", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        memberId: memberId,
+        preferredContactChoice: preferredContact,
+        currentPassword: currentPassword,
+        newPassword: newPassword
+      })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      showMessage("passwordMessageBox", data.error || "Password update failed.", "error");
+      return;
+    }
+
+    showMessage("passwordMessageBox", "Password changed successfully.", "success");
+    hidePasswordCard();
+
+  } catch (err) {
+    showMessage("passwordMessageBox", "Could not change password.\n\n" + err.message, "error");
+  } finally {
+    saveButton.disabled = false;
+    saveButton.textContent = "Save New Password";
+  }
+}
+
+function showMessage(boxId, message, type) {
+  const box = document.getElementById(boxId);
   box.textContent = message;
   box.className = "message " + type;
   box.style.display = "block";
 }
 
-function hideMessage() {
-  const box = document.getElementById("messageBox");
+function hideMessage(boxId) {
+  const box = document.getElementById(boxId);
   box.style.display = "none";
 }
 </script>
