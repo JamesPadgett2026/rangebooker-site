@@ -19,7 +19,6 @@
     color: white;
     padding: 20px;
     text-align: center;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
   }
 
   .header h1 {
@@ -50,80 +49,10 @@
     font-size: 14px;
   }
 
-  .nav-button:hover {
-    background: #1d4ed8;
-  }
-
   .container {
     max-width: 1200px;
     margin: auto;
     padding: 16px;
-  }
-
-  .section-title {
-    font-size: 28px;
-    margin-bottom: 20px;
-    text-align: center;
-    color: #111827;
-  }
-
-  .board-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 20px;
-  }
-
-  .post-card {
-    background: white;
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-    transition: transform 0.2s ease;
-  }
-
-  .post-card:hover {
-    transform: translateY(-4px);
-  }
-
-  .post-image {
-    width: 100%;
-    height: 220px;
-    object-fit: cover;
-    background: #d1d5db;
-  }
-
-  .post-content {
-    padding: 18px;
-  }
-
-  .post-category {
-    display: inline-block;
-    background: #dbeafe;
-    color: #1d4ed8;
-    padding: 4px 10px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: bold;
-    margin-bottom: 10px;
-  }
-
-  .post-title {
-    font-size: 22px;
-    font-weight: bold;
-    margin-bottom: 10px;
-  }
-
-  .post-text {
-    color: #4b5563;
-    line-height: 1.5;
-    margin-bottom: 14px;
-  }
-
-  .post-footer {
-    font-size: 13px;
-    color: #6b7280;
-    border-top: 1px solid #e5e7eb;
-    padding-top: 12px;
   }
 
   .featured-banner {
@@ -145,6 +74,67 @@
     max-width: 700px;
     margin: auto;
     line-height: 1.6;
+  }
+
+  .section-title {
+    font-size: 28px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  .board-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 20px;
+  }
+
+  .post-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  }
+
+  .post-content {
+    padding: 20px;
+  }
+
+  .post-title {
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+
+  .post-date {
+    display: inline-block;
+    background: #dbeafe;
+    color: #1d4ed8;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: bold;
+    margin-bottom: 12px;
+  }
+
+  .post-text {
+    color: #4b5563;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    margin-bottom: 14px;
+  }
+
+  .post-footer {
+    font-size: 13px;
+    color: #6b7280;
+    border-top: 1px solid #e5e7eb;
+    padding-top: 12px;
+  }
+
+  .message {
+    text-align: center;
+    color: #6b7280;
+    padding: 30px;
+    font-size: 18px;
   }
 
   .footer {
@@ -184,9 +174,8 @@
 
   <div class="featured-banner">
     <h2>Welcome to the Range Rats Community</h2>
-
     <p>
-      This bulletin board can be used for range announcements,
+      This bulletin board is used for range announcements,
       upcoming competitions, maintenance notices, club news,
       training opportunities, member highlights, and more.
     </p>
@@ -194,140 +183,102 @@
 
   <h2 class="section-title">Latest Posts</h2>
 
-  <div class="board-grid">
+  <div id="statusMessage" class="message">Loading bulletin board posts...</div>
 
-    <!-- POST 1 -->
-    <div class="post-card">
-
-      <img
-        class="post-image"
-        src="https://images.unsplash.com/photo-1511884642898-4c92249e20b6?q=80&w=1400&auto=format&fit=crop"
-      >
-
-      <div class="post-content">
-
-        <div class="post-category">
-          EVENT
-        </div>
-
-        <div class="post-title">
-          Saturday Night Steel Challenge
-        </div>
-
-        <div class="post-text">
-          Join us this Saturday at 6:00 PM for our monthly steel challenge.
-          Bring your own gear and eye/ear protection.
-          Food truck will be onsite.
-        </div>
-
-        <div class="post-footer">
-          Posted by Admin • May 6, 2026
-        </div>
-
-      </div>
-
-    </div>
-
-    <!-- POST 2 -->
-    <div class="post-card">
-
-      <img
-        class="post-image"
-        src="https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=1400&auto=format&fit=crop"
-      >
-
-      <div class="post-content">
-
-        <div class="post-category">
-          ANNOUNCEMENT
-        </div>
-
-        <div class="post-title">
-          New Member Orientation
-        </div>
-
-        <div class="post-text">
-          New member orientation will now be held every first Sunday of the month.
-          Please arrive 30 minutes early for check-in.
-        </div>
-
-        <div class="post-footer">
-          Posted by Range Staff • May 4, 2026
-        </div>
-
-      </div>
-
-    </div>
-
-    <!-- POST 3 -->
-    <div class="post-card">
-
-      <img
-        class="post-image"
-        src="https://images.unsplash.com/photo-1517466787929-bc90951d0974?q=80&w=1400&auto=format&fit=crop"
-      >
-
-      <div class="post-content">
-
-        <div class="post-category">
-          MAINTENANCE
-        </div>
-
-        <div class="post-title">
-          Rifle Bays Closed Tuesday
-        </div>
-
-        <div class="post-text">
-          Rifle bays 2 and 3 will be temporarily closed Tuesday morning
-          for berm maintenance and target stand repairs.
-        </div>
-
-        <div class="post-footer">
-          Posted by Maintenance • May 3, 2026
-        </div>
-
-      </div>
-
-    </div>
-
-    <!-- POST 4 -->
-    <div class="post-card">
-
-      <img
-        class="post-image"
-        src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=1400&auto=format&fit=crop"
-      >
-
-      <div class="post-content">
-
-        <div class="post-category">
-          COMMUNITY
-        </div>
-
-        <div class="post-title">
-          Volunteer Cleanup Day
-        </div>
-
-        <div class="post-text">
-          Looking for volunteers to help with range cleanup and painting next weekend.
-          Breakfast and drinks provided.
-        </div>
-
-        <div class="post-footer">
-          Posted by Admin • May 1, 2026
-        </div>
-
-      </div>
-
-    </div>
-
-  </div>
+  <div id="boardGrid" class="board-grid"></div>
 
 </div>
 
 <div class="footer">
-  © 2026 Range Rats • Bulletin Board Demo
+  © 2026 Range Rats • Bulletin Board
 </div>
+
+<script>
+const API_BASE = "https://rangebooker-api-ckdnhvh0f7hxa3hq.eastus-01.azurewebsites.net";
+
+function formatDate(value) {
+  if (!value) return "No date listed";
+
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return value;
+
+  return d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric"
+  });
+}
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+async function loadBulletinBoardPosts() {
+  const grid = document.getElementById("boardGrid");
+  const status = document.getElementById("statusMessage");
+
+  try {
+    const response = await fetch(`${API_BASE}/api/GetBulletinBoardPosts`);
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (!data.success) {
+      throw new Error(data.error || "API returned success false.");
+    }
+
+    const posts = data.posts || [];
+
+    grid.innerHTML = "";
+
+    if (posts.length === 0) {
+      status.textContent = "No bulletin board posts yet.";
+      return;
+    }
+
+    status.style.display = "none";
+
+    posts.forEach(post => {
+      const card = document.createElement("div");
+      card.className = "post-card";
+
+      card.innerHTML = `
+        <div class="post-content">
+          <div class="post-date">${escapeHtml(formatDate(post.datePostInformation))}</div>
+
+          <div class="post-title">
+            ${escapeHtml(post.title)}
+          </div>
+
+          <div class="post-text">
+            ${escapeHtml(post.information)}
+          </div>
+
+          <div class="post-footer">
+            Added ${escapeHtml(formatDate(post.dateAdded))}
+          </div>
+        </div>
+      `;
+
+      grid.appendChild(card);
+    });
+
+  } catch (err) {
+    console.error("Bulletin board load failed:", err);
+    status.textContent = "Unable to load bulletin board posts right now.";
+  }
+}
+
+loadBulletinBoardPosts();
+</script>
 
 </body>
 </html>
