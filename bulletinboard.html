@@ -116,6 +116,39 @@
     margin-bottom: 12px;
   }
 
+  .post-photos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin: 12px 0 16px 0;
+  }
+
+  .post-photo-wrap {
+    background: #f3f4f6;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .post-photo {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    display: block;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+
+  .post-photo:hover {
+    transform: scale(1.03);
+  }
+
+  .photo-title {
+    font-size: 12px;
+    color: #6b7280;
+    padding: 8px;
+    text-align: center;
+  }
+
   .post-text {
     color: #4b5563;
     line-height: 1.6;
@@ -180,6 +213,34 @@
     }
   }
 
+  .photo-modal {
+    display: none;
+    position: fixed;
+    z-index: 99999;
+    inset: 0;
+    background: rgba(0,0,0,0.9);
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+
+  .photo-modal img {
+    max-width: 95%;
+    max-height: 90vh;
+    border-radius: 12px;
+    background: white;
+  }
+
+  .photo-close {
+    position: fixed;
+    top: 18px;
+    right: 28px;
+    font-size: 42px;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+  }
+
   .footer {
     text-align: center;
     padding: 30px;
@@ -198,6 +259,10 @@
 
     .board-grid {
       grid-template-columns: 1fr;
+    }
+
+    .post-photo {
+      height: 220px;
     }
   }
 </style>
@@ -243,10 +308,14 @@
   © 2026 Range Rats • Bulletin Board
 </div>
 
+<div id="photoModal" class="photo-modal" onclick="closePhotoModal()">
+  <div class="photo-close">&times;</div>
+  <img id="photoModalImage" src="" alt="Bulletin board photo">
+</div>
+
 <script>
 const BULLETIN_API_URL = "/api/GetBulletinBoardPosts";
 
-// Basic member login protection
 const loggedInUser = sessionStorage.getItem("rangebookerUser");
 
 if (!loggedInUser) {
@@ -275,6 +344,15 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
+function escapeAttribute(value) {
+  return String(value || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+}
+
 function linkify(text) {
   return text.replace(
     /(https?:\/\/[^\s<]+)/g,
@@ -282,8 +360,61 @@ function linkify(text) {
   );
 }
 
+function openPhotoModal(src) {
+  const modal = document.getElementById("photoModal");
+  const modalImage = document.getElementById("photoModalImage");
+
+  modalImage.src = src;
+  modal.style.display = "flex";
+}
+
+function closePhotoModal() {
+  const modal = document.getElementById("photoModal");
+  const modalImage = document.getElementById("photoModalImage");
+
+  modal.style.display = "none";
+  modalImage.src = "";
+}
+
+function renderPhotos(photos) {
+  if (!photos || photos.length === 0) {
+    return "";
+  }
+
+  return `
+    <div class="post-photos">
+      ${photos.map(photo => {
+        const imageSrc = photo.image || "";
+        const photoTitle = photo.title || "";
+
+        if (!imageSrc) {
+          return "";
+        }
+
+        return `
+          <div class="post-photo-wrap">
+            <img
+              src="${escapeAttribute(imageSrc)}"
+              class="post-photo"
+              alt="${escapeAttribute(photoTitle || "Bulletin board photo")}"
+              onclick="openPhotoModal('${escapeAttribute(imageSrc)}')"
+            >
+            ${
+              photoTitle
+                ? `<div class="photo-title">${escapeHtml(photoTitle)}</div>`
+                : ""
+            }
+          </div>
+        `;
+      }).join("")}
+    </div>
+  `;
+}
+
 function showError(message, details) {
   const status = document.getElementById("statusMessage");
+
+  status.style.display = "block";
 
   status.innerHTML = `
     <div class="error-box">
@@ -359,6 +490,7 @@ async function loadBulletinBoardPosts() {
       const safeInfo = linkify(escapeHtml(post.information || ""));
       const safePostDate = escapeHtml(formatDate(post.datePostInformation));
       const safeAddedDate = escapeHtml(formatDate(post.dateAdded));
+      const photosHtml = renderPhotos(post.photos || []);
 
       card.innerHTML = `
         <div class="post-content">
@@ -367,6 +499,8 @@ async function loadBulletinBoardPosts() {
           <div class="post-title">
             ${safeTitle}
           </div>
+
+          ${photosHtml}
 
           <div class="post-text">
             ${safeInfo}
@@ -390,12 +524,17 @@ async function loadBulletinBoardPosts() {
       "1. Make sure /api/GetBulletinBoardPosts exists in Azure Functions.\n" +
       "2. Make sure the function is deployed.\n" +
       "3. Make sure the SharePoint list is named BulletinBoardPostsSP exactly.\n" +
-      "4. Make sure these columns exist exactly:\n" +
+      "4. Make sure the photo list is named BulletinBoardPhotos exactly.\n" +
+      "5. Make sure these post columns exist exactly:\n" +
       "   - PostTitleColSP\n" +
       "   - PostInformationColSP\n" +
       "   - DatePostInformation\n" +
       "   - DateAddedColSP\n" +
-      "5. Open the API URL directly in the browser to see its raw response."
+      "6. Make sure these photo columns exist exactly:\n" +
+      "   - BBPostIDLockInColSP\n" +
+      "   - PhotoTitleColSP\n" +
+      "   - Base64ColSP\n" +
+      "7. Open the API URL directly in the browser to see its raw response."
     );
   }
 }
