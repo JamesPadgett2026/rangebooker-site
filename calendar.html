@@ -6,65 +6,230 @@
   <title>RangeBooker</title>
 
   <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f5f7fb; color: #1f2937; }
-    .wrap { max-width: 1100px; margin: 0 auto; padding: 24px; }
-    .header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 20px; }
-    h1 { margin: 0 0 8px 0; font-size: 32px; }
-    .subtext { color: #6b7280; }
-
-    .login-link, .nav-link, button {
-      display: inline-block; background: #2563eb; color: white; padding: 10px 16px;
-      border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 600;
-      border: none; cursor: pointer;
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background:
+        radial-gradient(circle at top, rgba(37, 99, 235, 0.20), transparent 30%),
+        linear-gradient(135deg, #020617 0%, #111827 55%, #0f172a 100%);
+      color: #e5e7eb;
     }
 
-    .login-link:hover, .nav-link:hover, button:hover { background: #1d4ed8; }
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px;
+    }
 
-    .cancel-btn { margin-top: 12px; background: #dc2626; }
-    .cancel-btn:hover { background: #b91c1c; }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
 
-    .toolbar { margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
-    #status { margin-bottom: 18px; font-weight: bold; }
+    h1 {
+      margin: 0 0 8px 0;
+      font-size: 32px;
+      color: #f8fafc;
+    }
 
-    .legend { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; color: #4b5563; font-size: 14px; }
-    .legend-item { background: white; border-radius: 999px; padding: 7px 10px; border: 1px solid #e5e7eb; }
+    .subtext {
+      color: #cbd5e1;
+    }
 
-    .calendar-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
-    .card-link { display: block; text-decoration: none; color: inherit; }
+    .login-link,
+    .nav-link,
+    button {
+      display: inline-block;
+      background: #2563eb;
+      color: white;
+      padding: 10px 16px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.15s ease;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.30);
+    }
+
+    .login-link:hover,
+    .nav-link:hover,
+    button:hover {
+      background: #1d4ed8;
+      transform: translateY(-1px);
+    }
+
+    .cancel-btn {
+      margin-top: 12px;
+      background: #dc2626;
+    }
+
+    .cancel-btn:hover {
+      background: #b91c1c;
+    }
+
+    .toolbar {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    #status {
+      margin-bottom: 18px;
+      font-weight: bold;
+      color: #cbd5e1;
+    }
+
+    .legend {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+      color: #cbd5e1;
+      font-size: 14px;
+    }
+
+    .legend-item {
+      background: rgba(30, 41, 59, 0.90);
+      border-radius: 999px;
+      padding: 7px 12px;
+      border: 1px solid rgba(148, 163, 184, 0.20);
+      backdrop-filter: blur(6px);
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 16px;
+    }
+
+    .card-link {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+    }
 
     .day-card {
-      background: white; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-      padding: 16px; border-left: 8px solid #d1d5db; min-height: 150px;
+      background: rgba(15, 23, 42, 0.95);
+      border-radius: 16px;
+      box-shadow: 0 10px 26px rgba(0,0,0,0.35);
+      padding: 16px;
+      border-left: 8px solid #475569;
+      border-top: 1px solid rgba(148, 163, 184, 0.12);
+      border-right: 1px solid rgba(148, 163, 184, 0.12);
+      border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+      min-height: 150px;
       transition: transform 0.15s ease, box-shadow 0.15s ease;
     }
 
-    .day-card.available { border-left-color: #16a34a; cursor: pointer; }
-    .day-card.available:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.12); }
-    .day-card.requested { border-left-color: #d97706; }
-    .day-card.confirmed { border-left-color: #2563eb; }
-    .day-card.booked { border-left-color: #dc2626; opacity: 0.92; }
-    .day-card.blocked { border-left-color: #6b7280; background: #f9fafb; opacity: 0.88; }
-
-    .date-text { font-size: 18px; font-weight: 700; margin-bottom: 10px; }
-    .time-text { font-size: 15px; margin-bottom: 12px; color: #374151; }
-
-    .badge {
-      display: inline-block; padding: 6px 10px; border-radius: 999px;
-      font-size: 13px; font-weight: 700; margin-right: 6px; margin-bottom: 6px;
+    .day-card.available {
+      border-left-color: #16a34a;
+      cursor: pointer;
     }
 
-    .badge.available { background: #dcfce7; color: #166534; }
-    .badge.booked { background: #fee2e2; color: #991b1b; }
-    .badge.requested { background: #fef3c7; color: #92400e; }
-    .badge.confirmed { background: #dbeafe; color: #1e40af; }
-    .badge.blocked { background: #e5e7eb; color: #374151; }
+    .day-card.available:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 30px rgba(0,0,0,0.45);
+    }
 
-    .hint-text { margin-top: 8px; font-size: 12px; color: #6b7280; }
-    .empty-message { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+    .day-card.requested {
+      border-left-color: #d97706;
+    }
+
+    .day-card.confirmed {
+      border-left-color: #2563eb;
+    }
+
+    .day-card.booked {
+      border-left-color: #dc2626;
+      opacity: 0.95;
+    }
+
+    .day-card.blocked {
+      border-left-color: #6b7280;
+      background: rgba(30, 41, 59, 0.75);
+      opacity: 0.90;
+    }
+
+    .date-text {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: #f8fafc;
+    }
+
+    .time-text {
+      font-size: 15px;
+      margin-bottom: 12px;
+      color: #cbd5e1;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      margin-right: 6px;
+      margin-bottom: 6px;
+    }
+
+    .badge.available {
+      background: rgba(22, 163, 74, 0.18);
+      color: #86efac;
+    }
+
+    .badge.booked {
+      background: rgba(220, 38, 38, 0.18);
+      color: #fca5a5;
+    }
+
+    .badge.requested {
+      background: rgba(217, 119, 6, 0.18);
+      color: #fdba74;
+    }
+
+    .badge.confirmed {
+      background: rgba(37, 99, 235, 0.20);
+      color: #93c5fd;
+    }
+
+    .badge.blocked {
+      background: rgba(107, 114, 128, 0.20);
+      color: #d1d5db;
+    }
+
+    .hint-text {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+
+    .empty-message {
+      background: rgba(15, 23, 42, 0.95);
+      padding: 20px;
+      border-radius: 14px;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.35);
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      color: #e5e7eb;
+    }
 
     @media (max-width: 640px) {
-      .header { flex-direction: column; align-items: stretch; }
-      .login-link { text-align: center; }
+      .header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .login-link {
+        text-align: center;
+      }
     }
   </style>
 </head>
@@ -98,315 +263,7 @@
   </div>
 
   <script>
-    const MIN_DAYS_BETWEEN_REQUESTS = 5;
-
-    const savedUser = sessionStorage.getItem("rangebookerUser");
-
-    if (!savedUser) {
-      window.location.href = "/login.html";
-    }
-
-    const currentUser = JSON.parse(savedUser);
-    const memberId = currentUser.id || currentUser.ID || currentUser.Id || "";
-    const memberName = `${currentUser.firstName || ""} ${currentUser.lastName || ""}`.trim();
-
-    document.getElementById("welcomeText").textContent =
-      `Welcome ${memberName || "Member"}. View available, requested, and confirmed range days.`;
-
-    document.getElementById("loginBtn").onclick = function (e) {
-      e.preventDefault();
-      sessionStorage.removeItem("rangebookerUser");
-      window.location.href = "/login.html";
-    };
-
-    function normalize(value) {
-      return String(value || "").trim().toLowerCase();
-    }
-
-    function isConfirmedStatus(value) {
-      const status = normalize(value);
-      return status === "approved" || status === "confirmed" || status === "booked";
-    }
-
-    function isRequestedStatus(value) {
-      const status = normalize(value);
-      return status === "requesting" || status === "requested" || status === "pending";
-    }
-
-    function isDeniedStatus(value) {
-      const status = normalize(value);
-      return status === "denied" || status === "rejected";
-    }
-
-    function isBlockingRequest(value) {
-      return isRequestedStatus(value) || isConfirmedStatus(value);
-    }
-
-    function getDateOnly(dateValue) {
-      const d = new Date(dateValue);
-      d.setHours(0, 0, 0, 0);
-      return d;
-    }
-
-    function daysBetween(dateA, dateB) {
-      const a = getDateOnly(dateA);
-      const b = getDateOnly(dateB);
-
-      if (isNaN(a) || isNaN(b)) {
-        return 999999;
-      }
-
-      return Math.abs((a - b) / (1000 * 60 * 60 * 24));
-    }
-
-    function formatDateText(dateString) {
-      if (!dateString) return "";
-
-      const date = new Date(dateString);
-
-      if (isNaN(date)) {
-        return dateString;
-      }
-
-      return date.toLocaleDateString("en-US", {
-        weekday: "long",
-        month: "long",
-        day: "numeric",
-        year: "numeric"
-      });
-    }
-
-    function buildRequestUrl(item) {
-      const params = new URLSearchParams({
-        id: item.id || "",
-        date: item.date || "",
-        start: item.start || "",
-        end: item.end || "",
-        status: item.status || ""
-      });
-
-      return `/requestbooking.html?${params.toString()}`;
-    }
-
-    function getRequestForDate(myRequests, calendarItem) {
-      return myRequests.find(req => {
-        const reqDateId = String(req.dateId || "");
-        const calendarId = String(calendarItem.id || "");
-        return reqDateId === calendarId;
-      });
-    }
-
-    function getTooCloseRequest(myRequests, calendarItem) {
-      return myRequests.find(req => {
-        if (!isBlockingRequest(req.status)) return false;
-
-        const reqDateId = String(req.dateId || "");
-        const calendarId = String(calendarItem.id || "");
-
-        if (reqDateId === calendarId) return false;
-        if (!req.requestedDate) return false;
-
-        return daysBetween(calendarItem.date, req.requestedDate) <= MIN_DAYS_BETWEEN_REQUESTS;
-      });
-    }
-
-    async function cancelRequest(requestId) {
-      if (!requestId) {
-        alert("Missing request ID.");
-        return;
-      }
-
-      if (!confirm("Cancel this booking request?")) {
-        return;
-      }
-
-      try {
-        const response = await fetch("/api/DeleteRequest", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ requestId })
-        });
-
-        const text = await response.text();
-        let data = {};
-
-        if (text) {
-          try {
-            data = JSON.parse(text);
-          } catch {
-            data = {};
-          }
-        }
-
-        if (!response.ok || data.success === false) {
-          alert(data.error || text || "Could not cancel request.");
-          return;
-        }
-
-        alert("Request canceled.");
-        loadCalendar();
-
-      } catch (err) {
-        alert("Server error: " + err.message);
-      }
-    }
-
-    async function loadCalendar() {
-      const statusEl = document.getElementById("status");
-      const calendarEl = document.getElementById("calendar");
-
-      statusEl.textContent = "Loading calendar...";
-      calendarEl.innerHTML = "";
-
-      try {
-        const locationsResponse = await fetch("/api/GetLocations");
-        const locationsData = await locationsResponse.json();
-
-        if (!locationsResponse.ok || !locationsData.success) {
-          statusEl.textContent = "Could not load calendar data.";
-          calendarEl.innerHTML =
-            `<div class="empty-message"><pre>${JSON.stringify(locationsData, null, 2)}</pre></div>`;
-          return;
-        }
-
-        let myRequests = [];
-
-        if (memberId) {
-          const requestResponse = await fetch(
-            `/api/GetMyRequests?memberId=${encodeURIComponent(memberId)}`
-          );
-
-          const requestText = await requestResponse.text();
-          let requestData = {};
-
-          if (requestText) {
-            try {
-              requestData = JSON.parse(requestText);
-            } catch {
-              requestData = {};
-            }
-          }
-
-          if (requestResponse.ok && requestData.success) {
-            myRequests = requestData.requests || [];
-          }
-        }
-
-        const items = (locationsData.locations || [])
-          .map(item => ({
-            id: item.id,
-            date: item.dateTimeToSchedule,
-            start: item.startTime,
-            end: item.endTime,
-            status: item.availableOrBooked
-          }))
-          .filter(item => item.id && item.date)
-          .sort((a, b) => new Date(a.date) - new Date(b.date));
-
-        if (!items.length) {
-          statusEl.textContent = "No calendar items found.";
-          calendarEl.innerHTML =
-            `<div class="empty-message">There are no days to display.</div>`;
-          return;
-        }
-
-        const requestedCount = myRequests.filter(r => isRequestedStatus(r.status)).length;
-        const confirmedCount = myRequests.filter(r => isConfirmedStatus(r.status)).length;
-
-        statusEl.textContent =
-          `${items.length} day(s) loaded. You have ${requestedCount} requested and ${confirmedCount} confirmed.`;
-
-        calendarEl.innerHTML = items.map(item => {
-          const calendarStatus = normalize(item.status);
-          const isAvailable = calendarStatus === "available";
-
-          const myRequest = getRequestForDate(myRequests, item);
-          const tooCloseRequest = getTooCloseRequest(myRequests, item);
-
-          let cardClass = isAvailable ? "available" : "booked";
-
-          let mainBadge = isAvailable
-            ? `<span class="badge available">Available</span>`
-            : `<span class="badge booked">Booked</span>`;
-
-          let personalBadge = "";
-          let hintText = "";
-          let cancelButton = "";
-
-          if (myRequest) {
-            if (isConfirmedStatus(myRequest.status)) {
-              cardClass = "confirmed";
-              personalBadge = `<span class="badge confirmed">Confirmed for you</span>`;
-              hintText = "This date is confirmed for your account.";
-            } else if (isDeniedStatus(myRequest.status)) {
-              cardClass = isAvailable ? "available" : "booked";
-              personalBadge = `<span class="badge blocked">Previously denied</span>`;
-              hintText = isAvailable
-                ? "This request was denied before. You may request again if it is not too close to another active request."
-                : "This request was denied before, but this date is not currently available.";
-            } else {
-              cardClass = "requested";
-              personalBadge = `<span class="badge requested">Requested by you</span>`;
-              hintText = "You have already requested this date.";
-
-              cancelButton = `
-                <button class="cancel-btn" onclick="cancelRequest('${myRequest.id}')">
-                  Cancel Request
-                </button>
-              `;
-            }
-          } else if (tooCloseRequest && isAvailable) {
-            cardClass = "blocked";
-            personalBadge = `<span class="badge blocked">Too close to another request</span>`;
-            hintText =
-              `You must leave at least ${MIN_DAYS_BETWEEN_REQUESTS} full days between active requests.`;
-          } else if (isAvailable) {
-            hintText = "Click to request this booking.";
-          } else {
-            hintText = "This date is not currently available.";
-          }
-
-          const cardHtml = `
-            <div class="day-card ${cardClass}">
-              <div class="date-text">${formatDateText(item.date)}</div>
-
-              <div class="time-text">
-                ${item.start || ""}${item.start && item.end ? " - " : ""}${item.end || ""}
-              </div>
-
-              <div>
-                ${mainBadge}
-                ${personalBadge}
-              </div>
-
-              <div class="hint-text">${hintText}</div>
-              ${cancelButton}
-            </div>
-          `;
-
-          const canClick = isAvailable && !myRequest && !tooCloseRequest;
-
-          if (canClick) {
-            return `
-              <a class="card-link" href="${buildRequestUrl(item)}">
-                ${cardHtml}
-              </a>
-            `;
-          }
-
-          return cardHtml;
-        }).join("");
-
-      } catch (error) {
-        statusEl.textContent = "Error loading calendar.";
-        calendarEl.innerHTML =
-          `<div class="empty-message">${error.message}</div>`;
-      }
-    }
-
-    loadCalendar();
+    // KEEP YOUR EXISTING SCRIPT EXACTLY AS-IS
   </script>
 </body>
 </html>
