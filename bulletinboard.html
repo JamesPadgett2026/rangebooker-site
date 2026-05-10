@@ -1,3 +1,11 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<title>Range Rats Bulletin Board</title>
+
 <style>
   body {
     margin: 0;
@@ -45,10 +53,6 @@
     font-weight: bold;
     font-size: 14px;
     box-shadow: 0 8px 18px rgba(0,0,0,0.35);
-  }
-
-  .nav-button:hover {
-    background: #1d4ed8;
   }
 
   .container {
@@ -276,3 +280,281 @@
     }
   }
 </style>
+</head>
+
+<body>
+
+<div class="header">
+  <h1>Range Rats Bulletin Board</h1>
+  <p>Community news, announcements, events, and member updates.</p>
+</div>
+
+<div class="top-buttons">
+  <a href="memberhome.html" class="nav-button">← Home</a>
+  <a href="events.html" class="nav-button">Events</a>
+  <a href="mystats.html" class="nav-button">My Stats</a>
+  <a href="mysettings.html" class="nav-button">Settings</a>
+</div>
+
+<div class="container">
+
+  <div class="featured-banner">
+    <h2>Welcome to the Range Rats Community</h2>
+    <p>
+      This bulletin board is used for range announcements,
+      upcoming competitions, maintenance notices, club news,
+      training opportunities, member highlights, and more.
+    </p>
+  </div>
+
+  <h2 class="section-title">Latest Posts</h2>
+
+  <div id="statusMessage" class="message">
+    <div class="spinner"></div>
+    Loading bulletin board posts...
+  </div>
+
+  <div id="boardGrid" class="board-grid"></div>
+
+</div>
+
+<div class="footer">
+  © 2026 Range Rats • Bulletin Board
+</div>
+
+<div id="photoModal" class="photo-modal" onclick="closePhotoModal()">
+  <div class="photo-close">&times;</div>
+  <img id="photoModalImage" src="" alt="Bulletin board photo">
+</div>
+
+<script>
+const BULLETIN_API_URL = "/api/GetBulletinBoardPosts";
+
+const loggedInUser = sessionStorage.getItem("rangebookerUser");
+
+if (!loggedInUser) {
+  window.location.href = "login.html";
+}
+
+function formatDate(value) {
+  if (!value) return "No date listed";
+
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return value;
+
+  return d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric"
+  });
+}
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function escapeAttribute(value) {
+  return String(value || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+}
+
+function linkify(text) {
+  return text.replace(
+    /(https?:\/\/[^\s<]+)/g,
+    '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
+  );
+}
+
+function openPhotoModal(src) {
+  const modal = document.getElementById("photoModal");
+  const modalImage = document.getElementById("photoModalImage");
+
+  modalImage.src = src;
+  modal.style.display = "flex";
+}
+
+function closePhotoModal() {
+  const modal = document.getElementById("photoModal");
+  const modalImage = document.getElementById("photoModalImage");
+
+  modal.style.display = "none";
+  modalImage.src = "";
+}
+
+function renderPhotos(photos) {
+  if (!photos || photos.length === 0) {
+    return "";
+  }
+
+  return `
+    <div class="post-photos">
+      ${photos.map(photo => {
+        const imageSrc = photo.image || "";
+        const photoTitle = photo.title || "";
+
+        if (!imageSrc) {
+          return "";
+        }
+
+        return `
+          <div class="post-photo-wrap">
+            <img
+              src="${escapeAttribute(imageSrc)}"
+              class="post-photo"
+              alt="${escapeAttribute(photoTitle || "Bulletin board photo")}"
+              onclick="openPhotoModal('${escapeAttribute(imageSrc)}')"
+            >
+            ${
+              photoTitle
+                ? `<div class="photo-title">${escapeHtml(photoTitle)}</div>`
+                : ""
+            }
+          </div>
+        `;
+      }).join("")}
+    </div>
+  `;
+}
+
+function showError(message, details) {
+  const status = document.getElementById("statusMessage");
+
+  status.style.display = "block";
+
+  status.innerHTML = `
+    <div class="error-box">
+      <strong>Unable to load bulletin board posts.</strong>
+${escapeHtml(message)}
+
+${details ? escapeHtml(details) : ""}
+    </div>
+  `;
+}
+
+async function loadBulletinBoardPosts() {
+  const grid = document.getElementById("boardGrid");
+  const status = document.getElementById("statusMessage");
+
+  try {
+    const response = await fetch(BULLETIN_API_URL);
+
+    let rawText = "";
+    let data = null;
+
+    try {
+      rawText = await response.text();
+      data = rawText ? JSON.parse(rawText) : null;
+    } catch (parseErr) {
+      throw new Error(
+        `The API responded, but it did not return valid JSON.\n\n` +
+        `API URL: ${BULLETIN_API_URL}\n` +
+        `HTTP Status: ${response.status} ${response.statusText}\n\n` +
+        `Raw response:\n${rawText || "(empty response)"}`
+      );
+    }
+
+    if (!response.ok) {
+      throw new Error(
+        `The API returned an HTTP error.\n\n` +
+        `API URL: ${BULLETIN_API_URL}\n` +
+        `HTTP Status: ${response.status} ${response.statusText}\n\n` +
+        `API response:\n${JSON.stringify(data, null, 2)}`
+      );
+    }
+
+    if (!data || data.success !== true) {
+      throw new Error(
+        `The API returned success false or missing success value.\n\n` +
+        `API URL: ${BULLETIN_API_URL}\n\n` +
+        `API response:\n${JSON.stringify(data, null, 2)}`
+      );
+    }
+
+    const posts = data.posts || [];
+
+    posts.sort((a, b) => {
+      const dateA = new Date(a.datePostInformation || a.dateAdded || 0);
+      const dateB = new Date(b.datePostInformation || b.dateAdded || 0);
+      return dateB - dateA;
+    });
+
+    grid.innerHTML = "";
+
+    if (posts.length === 0) {
+      status.innerHTML = "No bulletin board posts yet.";
+      return;
+    }
+
+    status.style.display = "none";
+
+    posts.forEach(post => {
+      const card = document.createElement("div");
+      card.className = "post-card";
+
+      const safeTitle = escapeHtml(post.title || "Untitled Post");
+      const safeInfo = linkify(escapeHtml(post.information || ""));
+      const safePostDate = escapeHtml(formatDate(post.datePostInformation));
+      const safeAddedDate = escapeHtml(formatDate(post.dateAdded));
+      const photosHtml = renderPhotos(post.photos || []);
+
+      card.innerHTML = `
+        <div class="post-content">
+          <div class="post-date">${safePostDate}</div>
+
+          <div class="post-title">
+            ${safeTitle}
+          </div>
+
+          ${photosHtml}
+
+          <div class="post-text">
+            ${safeInfo}
+          </div>
+
+          <div class="post-footer">
+            Added ${safeAddedDate}
+          </div>
+        </div>
+      `;
+
+      grid.appendChild(card);
+    });
+
+  } catch (err) {
+    console.error("Bulletin board load failed:", err);
+
+    showError(
+      err.message || "Unknown error.",
+      "Common things to check:\n" +
+      "1. Make sure /api/GetBulletinBoardPosts exists in Azure Functions.\n" +
+      "2. Make sure the function is deployed.\n" +
+      "3. Make sure the SharePoint list is named BulletinBoardPostsSP exactly.\n" +
+      "4. Make sure the photo list is named BulletinBoardPhotos exactly.\n" +
+      "5. Make sure these post columns exist exactly:\n" +
+      "   - PostTitleColSP\n" +
+      "   - PostInformationColSP\n" +
+      "   - DatePostInformation\n" +
+      "   - DateAddedColSP\n" +
+      "6. Make sure these photo columns exist exactly:\n" +
+      "   - BBPostIDLockInColSP\n" +
+      "   - PhotoTitleColSP\n" +
+      "   - Base64ColSP\n" +
+      "7. Open the API URL directly in the browser to see its raw response."
+    );
+  }
+}
+
+loadBulletinBoardPosts();
+</script>
+
+</body>
+</html>
