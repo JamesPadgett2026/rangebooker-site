@@ -137,6 +137,7 @@
 
   <div class="password-wrap">
     <input id="password" type="password" placeholder="Password" autocomplete="current-password" />
+
     <button
       id="eyeButton"
       class="eye-button"
@@ -146,7 +147,9 @@
     >👁</button>
   </div>
 
-  <button id="loginButton" class="login-btn" onclick="login()">Login</button>
+  <button id="loginButton" class="login-btn" onclick="login()">
+    Login
+  </button>
 
   <div id="msg" class="msg"></div>
 
@@ -185,17 +188,29 @@ eyeButton.addEventListener("touchend", hidePassword);
 eyeButton.addEventListener("touchcancel", hidePassword);
 
 async function login() {
-  const email = document.getElementById("email").value.trim().toLowerCase();
-  const password = document.getElementById("password").value;
 
-  const msg = document.getElementById("msg");
-  const loginButton = document.getElementById("loginButton");
+  const email =
+    document.getElementById("email")
+      .value
+      .trim()
+      .toLowerCase();
+
+  const password =
+    document.getElementById("password").value;
+
+  const msg =
+    document.getElementById("msg");
+
+  const loginButton =
+    document.getElementById("loginButton");
 
   msg.textContent = "";
   msg.className = "msg";
 
   if (!email || !password) {
-    msg.textContent = "Please enter your email and password.";
+    msg.textContent =
+      "Please enter your email and password.";
+
     msg.className = "msg error";
     return;
   }
@@ -204,12 +219,16 @@ async function login() {
   loginButton.disabled = true;
 
   try {
+
     const res = await fetch("/api/LoginMember", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify({
+        email,
+        password
+      })
     });
 
     let data = {};
@@ -221,23 +240,37 @@ async function login() {
     }
 
     if (!res.ok || !data.success) {
-      const message = data.message || data.error || "Login failed";
-      const lowerMessage = message.toLowerCase();
+
+      const message =
+        data.message ||
+        data.error ||
+        "Login failed";
+
+      const lowerMessage =
+        message.toLowerCase();
 
       if (
         lowerMessage.includes("membership") ||
         lowerMessage.includes("not approved") ||
         lowerMessage.includes("not been approved")
       ) {
-        msg.textContent = "Your membership request has not been approved yet. Please wait for admin approval.";
+
+        msg.textContent =
+          "Your membership request has not been approved yet. Please wait for admin approval.";
+
       } else if (
         lowerMessage.includes("inactive") ||
         lowerMessage.includes("suspended") ||
         lowerMessage.includes("active")
       ) {
-        msg.textContent = "Your account is inactive or suspended. Please contact an administrator.";
+
+        msg.textContent =
+          "Your account is inactive or suspended. Please contact an administrator.";
+
       } else {
+
         msg.textContent = message;
+
       }
 
       msg.className = "msg error";
@@ -245,28 +278,48 @@ async function login() {
       return;
     }
 
-    const user = data.user || data.member;
+    const user =
+      data.user ||
+      data.member;
 
     if (!user) {
-      msg.textContent = "Login succeeded, but no user data was returned.";
+
+      msg.textContent =
+        "Login succeeded, but no user data was returned.";
+
       msg.className = "msg error";
       loginButton.disabled = false;
       return;
     }
 
-    sessionStorage.setItem("rangebookerUser", JSON.stringify(user));
+    sessionStorage.setItem(
+      "rangebookerUser",
+      JSON.stringify(user)
+    );
 
     msg.textContent = "Login successful!";
     msg.className = "msg success";
 
     setTimeout(() => {
+
+      // Force password change if password contains "password"
+      if (password.toLowerCase().includes("password")) {
+        window.location.href = "mysettings.html";
+        return;
+      }
+
       window.location.href = "memberhome.html";
+
     }, 500);
 
   } catch (err) {
-    msg.textContent = "Server error. Please try again.";
+
+    msg.textContent =
+      "Server error. Please try again.";
+
     msg.className = "msg error";
     loginButton.disabled = false;
+
   }
 }
 </script>
