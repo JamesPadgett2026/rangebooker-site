@@ -68,7 +68,7 @@
     color: #f8fafc;
   }
 
-  input, select {
+  input {
     width: 100%;
     box-sizing: border-box;
     padding: 12px;
@@ -166,24 +166,6 @@
   <div class="card">
     <h1>My Settings</h1>
 
-    <p class="hint">
-      Update your preferred contact method.
-    </p>
-
-    <label for="preferredContact">Preferred Contact Method</label>
-    <select id="preferredContact">
-      <option value="">Select one...</option>
-      <option value="Text">Text</option>
-      <option value="Email">Email</option>
-      <option value="None">None</option>
-    </select>
-
-    <button id="saveContactButton" onclick="saveContactMethod()">Save Contact Method</button>
-
-    <div id="contactMessageBox" class="message"></div>
-  </div>
-
-  <div class="card">
     <h2>Password</h2>
 
     <p class="hint">
@@ -224,13 +206,7 @@ if (!savedUser) {
 }
 
 const user = JSON.parse(savedUser);
-
 const memberId = user.id;
-
-document.getElementById("preferredContact").value =
-  user.preferredContactChoice ||
-  user.PreferredContactChoice ||
-  "None";
 
 function showPasswordCard() {
   document.getElementById("passwordFields").classList.remove("hidden");
@@ -249,63 +225,8 @@ function hidePasswordCard() {
   hideMessage("passwordMessageBox");
 }
 
-async function saveContactMethod() {
-  const saveButton = document.getElementById("saveContactButton");
-  const preferredContact = document.getElementById("preferredContact").value;
-
-  hideMessage("contactMessageBox");
-
-  if (!memberId) {
-    showMessage("contactMessageBox", "Missing member ID. Please log out and log back in.", "error");
-    return;
-  }
-
-  if (!preferredContact) {
-    showMessage("contactMessageBox", "Please choose a preferred contact method.", "error");
-    return;
-  }
-
-  saveButton.disabled = true;
-  saveButton.textContent = "Saving...";
-
-  try {
-    const res = await fetch("/api/UpdateMySettings", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        memberId: memberId,
-        preferredContactChoice: preferredContact
-      })
-    });
-
-    const data = await res.json();
-
-    if (!res.ok || !data.success) {
-      showMessage("contactMessageBox", data.error || "Contact method update failed.", "error");
-      return;
-    }
-
-    user.preferredContactChoice = preferredContact;
-    user.PreferredContactChoice = preferredContact;
-    sessionStorage.setItem("rangebookerUser", JSON.stringify(user));
-
-    showMessage("contactMessageBox", "Contact method saved successfully.", "success");
-
-  } catch (err) {
-    showMessage("contactMessageBox", "Could not save contact method.\n\n" + err.message, "error");
-  } finally {
-    saveButton.disabled = false;
-    saveButton.textContent = "Save Contact Method";
-  }
-}
-
 async function savePassword() {
   const saveButton = document.getElementById("savePasswordButton");
-
-  const preferredContact =
-    document.getElementById("preferredContact").value || "None";
 
   const currentPassword =
     document.getElementById("currentPassword").value.trim();
@@ -354,7 +275,6 @@ async function savePassword() {
       },
       body: JSON.stringify({
         memberId: memberId,
-        preferredContactChoice: preferredContact,
         currentPassword: currentPassword,
         newPassword: newPassword
       })
