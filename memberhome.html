@@ -219,7 +219,7 @@ async function loadMemberHomeLeftPhoto() {
     }
 
     const photo = data.photos.find(p =>
-      String(p.title || "").trim().toLowerCase() === "memerhomeleftside"
+      String(p.title || "").trim().toLowerCase() === "memberhomeleftside"
     );
 
     if (!photo || !photo.image) {
