@@ -6,15 +6,14 @@
 <title>RangeBooker - Member Home</title>
 
 <style>
-  * { box-sizing: border-box; }
+  * {
+    box-sizing: border-box;
+  }
 
   body {
     margin: 0;
     font-family: Arial, sans-serif;
-    background:
-      linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)),
-      url("https://images.unsplash.com/photo-1548438294-1ad5d5f4f063?auto=format&fit=crop&w=1400&q=80")
-      center/cover no-repeat;
+    background: #000;
     min-height: 100vh;
     color: white;
   }
@@ -26,7 +25,7 @@
   }
 
   .card {
-    background: rgba(15, 23, 42, 0.9);
+    background: rgba(15, 23, 42, 0.92);
     border-radius: 16px;
     padding: 30px;
     box-shadow: 0 20px 50px rgba(0,0,0,0.5);
@@ -47,6 +46,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    border: 1px solid rgba(255,255,255,0.08);
   }
 
   .left-photo-box img {
@@ -61,6 +61,7 @@
     color: #cbd5f5;
     padding: 20px;
     text-align: center;
+    font-size: 14px;
   }
 
   .title {
@@ -72,6 +73,7 @@
   .sub {
     color: #cbd5f5;
     margin-bottom: 24px;
+    line-height: 1.5;
   }
 
   h1 {
@@ -95,7 +97,7 @@
     text-align: center;
     font-weight: bold;
     color: white;
-    transition: transform 0.15s, box-shadow 0.15s;
+    transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
   }
 
   .btn:hover {
@@ -103,12 +105,37 @@
     box-shadow: 0 10px 20px rgba(0,0,0,0.4);
   }
 
-  .btn.secondary { background: #16a34a; }
-  .btn.orange { background: #ea580c; }
-  .btn.orange:hover { background: #c2410c; }
-  .btn.purple { background: #7c3aed; }
-  .btn.purple:hover { background: #6d28d9; }
-  .btn.logout { background: #dc2626; }
+  .btn.secondary {
+    background: #16a34a;
+  }
+
+  .btn.secondary:hover {
+    background: #15803d;
+  }
+
+  .btn.orange {
+    background: #ea580c;
+  }
+
+  .btn.orange:hover {
+    background: #c2410c;
+  }
+
+  .btn.purple {
+    background: #7c3aed;
+  }
+
+  .btn.purple:hover {
+    background: #6d28d9;
+  }
+
+  .btn.logout {
+    background: #dc2626;
+  }
+
+  .btn.logout:hover {
+    background: #b91c1c;
+  }
 
   .footer {
     margin-top: 30px;
@@ -130,7 +157,13 @@
   }
 
   @media (max-width: 600px) {
-    .wrap { padding: 20px; }
+    .wrap {
+      padding: 20px;
+    }
+
+    .card {
+      padding: 20px;
+    }
   }
 </style>
 </head>
@@ -138,39 +171,57 @@
 <body>
 
 <div class="wrap">
+
   <div class="card">
 
     <div class="member-layout">
 
+      <!-- LEFT SIDE PHOTO -->
       <div class="left-photo-box">
-        <div id="photoLoading" class="photo-loading">Loading photo...</div>
-        <img id="memberHomeLeftPhoto" alt="Member Home Photo" />
+
+        <div id="photoLoading" class="photo-loading">
+          Loading photo...
+        </div>
+
+        <img
+          id="memberHomeLeftPhoto"
+          alt="Member Home Photo"
+        />
+
       </div>
 
+      <!-- RIGHT SIDE CONTENT -->
       <div>
 
-        <div class="title">🎯 RangeBooker</div>
+        <div class="title">
+          🎯 RangeBooker
+        </div>
 
         <h1 id="welcome"></h1>
 
         <div class="sub">
-          Manage your range access, view availability, and track your activity.
+          Manage your range access, view availability,
+          and track your activity.
         </div>
 
         <div class="actions">
 
+          <!-- CALENDAR -->
           <a class="btn" href="/calendar.html">
             📅 View Calendar
           </a>
 
+          <!-- MY STATS -->
           <a class="btn secondary" href="/mystats.html">
             📊 My Stats
           </a>
 
+          <!-- BULLETIN BOARD -->
           <a class="btn orange" href="/bulletinboard.html">
             📌 Bullet-Tin Board
           </a>
 
+          <!-- SETTINGS -->
           <a class="btn purple" href="/mysettings.html">
             ⚙ My Settings
           </a>
@@ -178,9 +229,15 @@
         </div>
 
         <div class="footer">
-          <a class="btn logout" href="#" onclick="logout()">
+
+          <a
+            class="btn logout"
+            href="#"
+            onclick="logout()"
+          >
             Logout
           </a>
+
         </div>
 
       </div>
@@ -188,9 +245,11 @@
     </div>
 
   </div>
+
 </div>
 
 <script>
+
 const user = sessionStorage.getItem("rangebookerUser");
 
 if (!user) {
@@ -206,43 +265,60 @@ document.getElementById("welcome").innerText =
   (parsed.lastName || "");
 
 async function loadMemberHomeLeftPhoto() {
+
   const img = document.getElementById("memberHomeLeftPhoto");
   const loading = document.getElementById("photoLoading");
 
   try {
+
     const response = await fetch("/api/GetWebsitePhotos");
+
     const data = await response.json();
 
     if (!data.success || !Array.isArray(data.photos)) {
+
       loading.innerText = "Photo unavailable";
+
       return;
     }
 
     const photo = data.photos.find(p =>
-      String(p.title || "").trim().toLowerCase() === "memberhomeleftside"
+      String(p.title || "")
+        .trim()
+        .toLowerCase() === "memberhomeleftside"
     );
 
     if (!photo || !photo.image) {
+
       loading.innerText = "Photo not found";
+
       return;
     }
 
     img.src = photo.image;
+
     img.style.display = "block";
+
     loading.style.display = "none";
 
-  } catch (err) {
+  }
+  catch (err) {
+
     console.error("Photo load failed:", err);
+
     loading.innerText = "Photo unavailable";
   }
 }
 
 function logout() {
+
   sessionStorage.removeItem("rangebookerUser");
+
   window.location.href = "login.html";
 }
 
 loadMemberHomeLeftPhoto();
+
 </script>
 
 </body>
