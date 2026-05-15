@@ -110,7 +110,10 @@
     color: white;
     text-shadow: 0 2px 6px #000, 0 0 14px #000;
     border: 1px solid rgba(255,255,255,0.15);
-    transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
+    transition:
+      transform 0.15s,
+      box-shadow 0.15s,
+      filter 0.15s;
   }
 
   .btn:hover {
@@ -120,14 +123,22 @@
   }
 
   .btn.logout {
-    min-height: auto;
-    background-image: none;
+    min-height: 70px;
+    background-image: var(--bullet-menu-photo);
+    background-size: cover;
+    background-position: center;
     background-color: #dc2626;
-    font-size: 16px;
+    font-size: 18px;
+    transform: scaleX(-1);
+  }
+
+  .btn.logout span {
+    display: inline-block;
+    transform: scaleX(-1);
   }
 
   .btn.logout:hover {
-    background-color: #b91c1c;
+    filter: brightness(1.15);
   }
 
   .footer {
@@ -174,7 +185,11 @@
     <div class="member-layout">
 
       <div class="left-photo-box">
-        <div id="photoLoading" class="photo-loading">
+
+        <div
+          id="photoLoading"
+          class="photo-loading"
+        >
           Loading photo...
         </div>
 
@@ -182,6 +197,7 @@
           id="memberHomeLeftPhoto"
           alt="Member Home Photo"
         />
+
       </div>
 
       <div>
@@ -193,38 +209,53 @@
         <h1 id="welcome"></h1>
 
         <div class="sub">
-          Manage your range access, view availability,
+          Manage your range access,
+          view availability,
           and track your activity.
         </div>
 
         <div class="actions">
 
-          <a class="btn" href="/calendar.html">
+          <a
+            class="btn"
+            href="/calendar.html"
+          >
             📅 View Calendar
           </a>
 
-          <a class="btn" href="/mystats.html">
+          <a
+            class="btn"
+            href="/mystats.html"
+          >
             📊 My Stats
           </a>
 
-          <a class="btn" href="/bulletinboard.html">
+          <a
+            class="btn"
+            href="/bulletinboard.html"
+          >
             📌 Bullet-Tin Board
           </a>
 
-          <a class="btn" href="/mysettings.html">
+          <a
+            class="btn"
+            href="/mysettings.html"
+          >
             ⚙ My Settings
           </a>
 
         </div>
 
         <div class="footer">
+
           <a
             class="btn logout"
             href="#"
             onclick="logout()"
           >
-            Logout
+            <span>Logout</span>
           </a>
+
         </div>
 
       </div>
@@ -250,54 +281,92 @@ document.getElementById("welcome").innerText =
   (parsed.lastName || "");
 
 async function getWebsitePhotos() {
+
   const response = await fetch("/api/GetWebsitePhotos");
+
   const data = await response.json();
 
-  if (!data.success || !Array.isArray(data.photos)) {
+  if (
+    !data.success ||
+    !Array.isArray(data.photos)
+  ) {
     return [];
   }
 
   return data.photos;
 }
 
-function findPhotoByName(photos, photoName) {
+function findPhotoByName(
+  photos,
+  photoName
+) {
+
   const wanted = String(photoName || "")
     .trim()
     .toLowerCase();
 
   return photos.find(p =>
-    String(p.title || p.photoName || "")
+    String(
+      p.title ||
+      p.photoName ||
+      ""
+    )
       .trim()
       .toLowerCase() === wanted
   );
 }
 
 async function loadPagePhotos() {
-  const img = document.getElementById("memberHomeLeftPhoto");
-  const loading = document.getElementById("photoLoading");
+
+  const img =
+    document.getElementById(
+      "memberHomeLeftPhoto"
+    );
+
+  const loading =
+    document.getElementById(
+      "photoLoading"
+    );
 
   try {
-    const photos = await getWebsitePhotos();
 
-    const leftPhoto = findPhotoByName(
-      photos,
-      "MemberHomeLeftSide"
-    );
+    const photos =
+      await getWebsitePhotos();
 
-    if (leftPhoto && leftPhoto.image) {
+    const leftPhoto =
+      findPhotoByName(
+        photos,
+        "MemberHomeLeftSide"
+      );
+
+    if (
+      leftPhoto &&
+      leftPhoto.image
+    ) {
+
       img.src = leftPhoto.image;
+
       img.style.display = "block";
+
       loading.style.display = "none";
+
     } else {
-      loading.innerText = "Photo not found";
+
+      loading.innerText =
+        "Photo not found";
     }
 
-    const bulletPhoto = findPhotoByName(
-      photos,
-      "BulletMenuPhoto"
-    );
+    const bulletPhoto =
+      findPhotoByName(
+        photos,
+        "BulletMenuPhoto"
+      );
 
-    if (bulletPhoto && bulletPhoto.image) {
+    if (
+      bulletPhoto &&
+      bulletPhoto.image
+    ) {
+
       document.documentElement.style.setProperty(
         "--bullet-menu-photo",
         `url("${bulletPhoto.image}")`
@@ -305,14 +374,25 @@ async function loadPagePhotos() {
     }
 
   } catch (err) {
-    console.error("Photo load failed:", err);
-    loading.innerText = "Photo unavailable";
+
+    console.error(
+      "Photo load failed:",
+      err
+    );
+
+    loading.innerText =
+      "Photo unavailable";
   }
 }
 
 function logout() {
-  sessionStorage.removeItem("rangebookerUser");
-  window.location.href = "login.html";
+
+  sessionStorage.removeItem(
+    "rangebookerUser"
+  );
+
+  window.location.href =
+    "login.html";
 }
 
 loadPagePhotos();
