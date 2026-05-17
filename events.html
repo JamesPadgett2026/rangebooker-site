@@ -57,6 +57,10 @@
             background: linear-gradient(135deg, #d4a017, #8a5a00);
         }
 
+        .topButtons a:hover {
+            filter: brightness(1.12);
+        }
+
         #status {
             text-align: center;
             color: #ccc;
@@ -117,6 +121,8 @@
             color: #ccc;
             line-height: 1.4;
             margin-bottom: 10px;
+            white-space: pre-wrap;
+            word-break: break-word;
         }
 
         .eventMeta {
@@ -133,6 +139,10 @@
             font-weight: bold;
             border-radius: 10px;
             background: linear-gradient(135deg, #0078d4, #004f8c);
+        }
+
+        .eventButton:hover {
+            filter: brightness(1.15);
         }
 
         footer {
@@ -181,6 +191,10 @@
 </footer>
 
 <script>
+if (sessionStorage.getItem("eventAccess") !== "true") {
+    window.location.href = "/index.html";
+}
+
 async function loadEvents() {
     const status = document.getElementById("status");
     const list = document.getElementById("eventsList");
@@ -192,13 +206,12 @@ async function loadEvents() {
             throw new Error("API returned " + res.status);
         }
 
-       const data = await res.json();
-const events = data.events || [];
+        const data = await res.json();
+        const events = data.events || [];
 
-// OLDEST TO NEWEST
-events.sort((a, b) => {
-    return new Date(a.eventDate) - new Date(b.eventDate);
-});
+        events.sort((a, b) => {
+            return new Date(a.eventDate || 0) - new Date(b.eventDate || 0);
+        });
 
         list.innerHTML = "";
 
@@ -221,7 +234,7 @@ events.sort((a, b) => {
                 imageHtml = `
                     <img class="eventThumb"
                          src="${imageSource}"
-                         alt="${escapeHtml(eventItem.title)}">
+                         alt="${escapeHtml(eventItem.title || "Event photo")}">
                 `;
             } else {
                 imageHtml = `<div class="noImage">No Photo</div>`;
@@ -247,7 +260,7 @@ events.sort((a, b) => {
 
                     <div class="eventMeta">
                         ${eventItem.createdByName ? "Created by: " + escapeHtml(eventItem.createdByName) + "<br>" : ""}
-                        Event ID: ${escapeHtml(String(eventItem.id))}
+                        Event ID: ${escapeHtml(String(eventItem.id || ""))}
                     </div>
 
                     <a class="eventButton" href="eventsview.html?id=${encodeURIComponent(eventItem.id)}">
