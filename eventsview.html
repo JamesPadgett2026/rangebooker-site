@@ -57,15 +57,16 @@
             padding: 14px;
         }
 
-      .mainImage {
-    width: 100%;
-    max-height: 520px;
-    object-fit: contain;
-    display: block;
-    cursor: pointer;
-    border-radius: 12px;
-    background: #000;
-}
+        .mainImage {
+            width: 100%;
+            max-height: 520px;
+            object-fit: contain;
+            display: block;
+            cursor: pointer;
+            border-radius: 12px;
+            background: #000;
+        }
+
         .photoHint {
             position: absolute;
             bottom: 24px;
@@ -359,6 +360,11 @@
 </div>
 
 <script>
+
+if (sessionStorage.getItem("eventAccess") !== "true") {
+    window.location.href = "/index.html";
+}
+
 let allImages = [];
 let currentImageIndex = 0;
 
@@ -454,6 +460,11 @@ async function loadEvent() {
 
     try {
         const res = await fetch("/api/GetEvents");
+
+        if (!res.ok) {
+            throw new Error("API returned " + res.status);
+        }
+
         const data = await res.json();
         const events = data.events || [];
 
@@ -513,6 +524,7 @@ async function loadEvent() {
 
         if (allImages.length > 0) {
             allImages.forEach(function(src, index) {
+
                 const item = document.createElement("div");
                 item.className = "galleryItem";
 
@@ -526,6 +538,7 @@ async function loadEvent() {
 
                 item.appendChild(img);
                 gallery.appendChild(item);
+
             });
         } else {
             gallery.innerHTML = "<div class='status'>No photos found for this event.</div>";
@@ -539,6 +552,7 @@ async function loadEvent() {
 }
 
 loadEvent();
+
 </script>
 
 </body>
