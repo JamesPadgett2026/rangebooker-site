@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RangeBooker - Yard Sale</title>
+
+<style>
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #020617;
+    color: white;
+  }
+
+  .wrap {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 30px 18px;
+  }
+
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+
+  .back {
+    color: white;
+    background: #334155;
+    text-decoration: none;
+    padding: 12px 18px;
+    border-radius: 10px;
+    font-weight: bold;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 32px;
+  }
+
+  .sub {
+    color: #cbd5e1;
+    margin-bottom: 25px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+  }
+
+  .item {
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.35);
+  }
+
+  .pic {
+    height: 190px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 72px;
+    background: linear-gradient(135deg, #1e293b, #475569);
+  }
+
+  .body {
+    padding: 18px;
+  }
+
+  .title {
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+
+  .desc {
+    color: #dbeafe;
+    line-height: 1.4;
+    min-height: 58px;
+  }
+
+  .meta {
+    margin-top: 14px;
+    font-size: 14px;
+    color: #cbd5e1;
+    line-height: 1.7;
+  }
+
+  .price {
+    font-size: 20px;
+    font-weight: bold;
+    color: #facc15;
+    margin-top: 12px;
+  }
+
+  button {
+    width: 100%;
+    margin-top: 16px;
+    border: none;
+    border-radius: 12px;
+    padding: 14px;
+    background: #16a34a;
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  button:hover {
+    filter: brightness(1.15);
+  }
+
+  .note {
+    margin-top: 30px;
+    color: #94a3b8;
+    text-align: center;
+    font-size: 14px;
+  }
+</style>
+</head>
+
+<body>
+
+<div class="wrap">
+
+  <div class="topbar">
+    <div>
+      <h1>🏷 RangeBooker Yard Sale</h1>
+      <div class="sub">
+        Slightly suspicious items. Questionable condition. Serious bidders only.
+      </div>
+    </div>
+
+    <a class="back" href="/memberhome.html">
+      ← Back Home
+    </a>
+  </div>
+
+  <div class="grid">
+
+    <div class="item">
+      <div class="pic">☀️</div>
+      <div class="body">
+        <div class="title">Pocket Full of Sunshine</div>
+        <div class="desc">
+          Gently used. Still warm. May brighten your day or void your warranty.
+        </div>
+        <div class="meta">
+          Listed: May 25, 2026<br>
+          Seller: Definitely Not Natasha Bedingfield
+        </div>
+        <div class="price">$7 or best offer</div>
+        <button onclick="placeBid('Pocket Full of Sunshine')">Place Bid</button>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="pic">🪨</div>
+      <div class="body">
+        <div class="title">Premium Fool’s Gold</div>
+        <div class="desc">
+          Looks expensive from far away. Even better if you do not inspect it.
+        </div>
+        <div class="meta">
+          Listed: May 24, 2026<br>
+          Seller: Shady Pete
+        </div>
+        <div class="price">$19.99 OBO</div>
+        <button onclick="placeBid('Premium Fool’s Gold')">Place Bid</button>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="pic">🧦</div>
+      <div class="body">
+        <div class="title">One Left Sock</div>
+        <div class="desc">
+          Right sock disappeared under mysterious laundry-related circumstances.
+        </div>
+        <div class="meta">
+          Listed: May 22, 2026<br>
+          Seller: Laundry Survivor
+        </div>
+        <div class="price">Free, but emotionally costly</div>
+        <button onclick="placeBid('One Left Sock')">Place Bid</button>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="pic">🫙</div>
+      <div class="body">
+        <div class="title">Jar of Fresh Air</div>
+        <div class="desc">
+          Locally sourced. Organic. Opened once to verify freshness.
+        </div>
+        <div class="meta">
+          Listed: May 21, 2026<br>
+          Seller: AirBnB
+        </div>
+        <div class="price">$3.50 or trade for silence</div>
+        <button onclick="placeBid('Jar of Fresh Air')">Place Bid</button>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="pic">🦄</div>
+      <div class="body">
+        <div class="title">Invisible Unicorn</div>
+        <div class="desc">
+          Very rare. Cannot be seen, touched, or proven. Comes with imaginary saddle.
+        </div>
+        <div class="meta">
+          Listed: May 20, 2026<br>
+          Seller: Wizard Gary
+        </div>
+        <div class="price">$1,000,000 OBO</div>
+        <button onclick="placeBid('Invisible Unicorn')">Place Bid</button>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="pic">🥔</div>
+      <div class="body">
+        <div class="title">Motivational Potato</div>
+        <div class="desc">
+          Sits quietly on your desk and judges your life choices.
+        </div>
+        <div class="meta">
+          Listed: May 19, 2026<br>
+          Seller: Spud Life Coach
+        </div>
+        <div class="price">$12 firm</div>
+        <button onclick="placeBid('Motivational Potato')">Place Bid</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="note">
+    Demo page only. No actual sunshine, unicorns, potatoes, or legal warranties included.
+  </div>
+
+</div>
+
+<script>
+function placeBid(itemName) {
+  alert(
+    "Bid placed for: " +
+    itemName +
+    "\n\nYour offer has been sent directly to absolutely nobody yet."
+  );
+}
+</script>
+
+</body>
+</html>
