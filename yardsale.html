@@ -1,257 +1,341 @@
 // GET YARD SALE ITEMS AS NORMAL HTML WEBPAGE
 app.http("GetYardSaleItems", {
-  methods: ["GET"],
-  authLevel: "anonymous",
+    methods: ["GET"],
+    authLevel: "anonymous",
 
-  handler: async (request, context) => {
-    context.log(`GetYardSaleItems HTML page called. Version: ${API_VERSION}`);
+    handler: async (request, context) => {
 
-    try {
-      const token = await getAccessToken();
-      const site = await getRangeBookerSite(token);
+        context.log(`GetYardSaleItems HTML page called. Version: ${API_VERSION}`);
 
-      const itemRows = await getListItems(token, site.id, "YardSaleItems");
-      const photoRows = await getListItems(token, site.id, "YardSaleItemsPhotos");
+        try {
 
-      const escapeHtml = value =>
-        String(value || "")
-          .replaceAll("&", "&amp;")
-          .replaceAll("<", "&lt;")
-          .replaceAll(">", "&gt;")
-          .replaceAll('"', "&quot;")
-          .replaceAll("'", "&#039;");
+            const token = await getAccessToken();
+            const site = await getRangeBookerSite(token);
 
-      const formatPrice = value => {
-        const n = Number(value);
-        if (!value && value !== 0) return "";
-        if (Number.isNaN(n)) return escapeHtml(value);
-        return "$" + n.toLocaleString("en-US", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2
-        });
-      };
+            const itemRows = await getListItems(
+                token,
+                site.id,
+                "YardSaleItems"
+            );
 
-      const items = itemRows
-        .filter(item => {
-          const f = item.fields || {};
-          return String(f.SaleOpenClosed || "").trim().toLowerCase() === "open";
-        })
-        .map(item => {
-          const f = item.fields || {};
-          const itemId = Number(item.id || f.ID || 0);
+            const photoRows = await getListItems(
+                token,
+                site.id,
+                "YardSaleItemsPhotos"
+            );
 
-          const photos = photoRows
-            .filter(photo => {
-              const pf = photo.fields || {};
-              return Number(pf.YardSaleItemLockInColSP || 0) === itemId;
-            })
-            .map(photo => {
-              const pf = photo.fields || {};
-              return buildImageDataUrl(
-                pf.PhotoYardSaleBase64ColSP ||
-                pf.Base64ColSP ||
-                ""
-              );
-            })
-            .filter(Boolean);
+            // SAFE HTML ENCODING
+            function escapeHtml(value) {
 
-          return {
-            id: itemId,
-            itemName: f.YardSaleItemNameColSP || "Untitled Item",
-            description: f.YardSaleItemDescriptionColSP || "",
-            condition: f.ConditionColSP || "",
-            saleType: f.SaleType || "",
-            askingPrice: f.AskingPrice || "",
-            imageDataUrl: photos.length > 0 ? photos[0] : ""
-          };
-        });
+                return String(value || "")
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }
 
-      const cardsHtml = items.length
-        ? items.map(item => `
-          <div class="item-card">
-            <div class="photo-wrap">
-              ${
-                item.imageDataUrl
-                  ? `<img src="${item.imageDataUrl}" alt="${escapeHtml(item.itemName)}">`
-                  : `<div class="no-photo">No Photo</div>`
-              }
-            </div>
+            // FORMAT PRICE
+            function formatPrice(value) {
 
-            <div class="item-body">
-              <h2>${escapeHtml(item.itemName)}</h2>
+                const n = Number(value);
 
-              <div class="price">${formatPrice(item.askingPrice)}</div>
+                if (isNaN(n)) {
+                    return escapeHtml(value || "");
+                }
 
-              <p class="description">
-                ${escapeHtml(item.description)}
-              </p>
+                return "$" + n.toLocaleString("en-US", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            }
 
-              <div class="details">
-                <span>${escapeHtml(item.condition || "Condition Unknown")}</span>
-                <span>${escapeHtml(item.saleType || "Sale Type Unknown")}</span>
-              </div>
-            </div>
-          </div>
-        `).join("")
-        : `<div class="empty">No open yard sale items found.</div>`;
+            // BUILD ITEM HTML
+            let cardsHtml = "";
 
-      const html = `<!DOCTYPE html>
+            const openItems = itemRows.filter(item => {
+
+                const f = item.fields || {};
+
+                return (
+                    String(f.SaleOpenClosed || "")
+                        .trim()
+                        .toLowerCase() === "open"
+                );
+            });
+
+            for (const item of openItems) {
+
+                const f = item.fields || {};
+
+                const itemId = Number(item.id || f.ID || 0);
+
+                const matchingPhotos = photoRows.filter(photo => {
+
+                    const pf = photo.fields || {};
+
+                    return (
+                        Number(pf.YardSaleItemLockInColSP || 0) === itemId
+                    );
+                });
+
+                let firstImage = "";
+
+                if (matchingPhotos.length > 0) {
+
+                    const pf = matchingPhotos[0].fields || {};
+
+                    firstImage = buildImageDataUrl(
+                        pf.PhotoYardSaleBase64ColSP ||
+                        pf.Base64ColSP ||
+                        ""
+                    );
+                }
+
+                cardsHtml += `
+<div class="item-card">
+
+    <div class="photo-wrap">
+
+        ${
+            firstImage
+                ? `<img src="${firstImage}" alt="${escapeHtml(f.YardSaleItemNameColSP || "")}">`
+                : `<div class="no-photo">No Photo</div>`
+        }
+
+    </div>
+
+    <div class="item-body">
+
+        <h2>
+            ${escapeHtml(f.YardSaleItemNameColSP || "Untitled Item")}
+        </h2>
+
+        <div class="price">
+            ${formatPrice(f.AskingPrice || 0)}
+        </div>
+
+        <p class="description">
+            ${escapeHtml(f.YardSaleItemDescriptionColSP || "")}
+        </p>
+
+        <div class="details">
+
+            <span>
+                ${escapeHtml(f.ConditionColSP || "Unknown Condition")}
+            </span>
+
+            <span>
+                ${escapeHtml(f.SaleType || "Unknown Sale Type")}
+            </span>
+
+        </div>
+
+    </div>
+
+</div>
+`;
+            }
+
+            // NO ITEMS
+            if (!cardsHtml) {
+
+                cardsHtml = `
+<div class="empty">
+    No open yard sale items found.
+</div>
+`;
+            }
+
+            // FULL HTML PAGE
+            const html = `
+<!DOCTYPE html>
+
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Yard Sale Items</title>
 
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f4f1e8;
-      color: #222;
-    }
+<meta charset="UTF-8">
 
-    header {
-      background: #3b2f24;
-      color: white;
-      padding: 24px 16px;
-      text-align: center;
-    }
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    header h1 {
-      margin: 0;
-      font-size: 34px;
-    }
+<title>Yard Sale Items</title>
 
-    header p {
-      margin: 8px 0 0;
-      opacity: 0.85;
-    }
+<style>
 
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 24px 16px;
-    }
+body{
+    margin:0;
+    background:#f3efe7;
+    font-family:Arial,sans-serif;
+    color:#222;
+}
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 22px;
-    }
+header{
+    background:#3a2c20;
+    color:white;
+    text-align:center;
+    padding:30px 20px;
+}
 
-    .item-card {
-      background: white;
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.14);
-      border: 1px solid #ddd;
-    }
+header h1{
+    margin:0;
+    font-size:42px;
+}
 
-    .photo-wrap {
-      width: 100%;
-      height: 230px;
-      background: #ddd;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-    }
+header p{
+    margin-top:10px;
+    opacity:.9;
+}
 
-    .photo-wrap img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      background: #eee;
-    }
+.container{
+    max-width:1200px;
+    margin:auto;
+    padding:25px;
+}
 
-    .no-photo {
-      color: #666;
-      font-size: 18px;
-    }
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+    gap:24px;
+}
 
-    .item-body {
-      padding: 16px;
-    }
+.item-card{
+    background:white;
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow:0 5px 18px rgba(0,0,0,.14);
+}
 
-    .item-body h2 {
-      margin: 0 0 8px;
-      font-size: 22px;
-      color: #2d2118;
-    }
+.photo-wrap{
+    width:100%;
+    height:260px;
+    background:#ddd;
+    overflow:hidden;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
 
-    .price {
-      font-size: 24px;
-      font-weight: bold;
-      color: #0b7a3b;
-      margin-bottom: 10px;
-    }
+.photo-wrap img{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    background:#eee;
+}
 
-    .description {
-      font-size: 15px;
-      line-height: 1.4;
-      color: #444;
-      min-height: 42px;
-    }
+.no-photo{
+    font-size:22px;
+    color:#666;
+}
 
-    .details {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 14px;
-    }
+.item-body{
+    padding:18px;
+}
 
-    .details span {
-      background: #eee6d8;
-      color: #3b2f24;
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size: 13px;
-      font-weight: bold;
-    }
+.item-body h2{
+    margin-top:0;
+    margin-bottom:10px;
+    font-size:26px;
+    color:#2f2419;
+}
 
-    .empty {
-      background: white;
-      padding: 28px;
-      border-radius: 14px;
-      text-align: center;
-      font-size: 20px;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.1);
-    }
-  </style>
+.price{
+    color:#0d7a39;
+    font-size:30px;
+    font-weight:bold;
+    margin-bottom:14px;
+}
+
+.description{
+    color:#444;
+    line-height:1.5;
+    min-height:50px;
+}
+
+.details{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:18px;
+}
+
+.details span{
+    background:#efe4d2;
+    padding:7px 12px;
+    border-radius:999px;
+    font-size:13px;
+    font-weight:bold;
+    color:#3c2f24;
+}
+
+.empty{
+    background:white;
+    padding:30px;
+    border-radius:18px;
+    text-align:center;
+    font-size:24px;
+    box-shadow:0 5px 18px rgba(0,0,0,.1);
+}
+
+</style>
+
 </head>
 
 <body>
-  <header>
+
+<header>
+
     <h1>Yard Sale Items</h1>
-    <p>${items.length} open item${items.length === 1 ? "" : "s"} available</p>
-  </header>
 
-  <main class="container">
+    <p>
+        ${openItems.length} open item${openItems.length === 1 ? "" : "s"} available
+    </p>
+
+</header>
+
+<div class="container">
+
     <div class="grid">
-      ${cardsHtml}
+
+        ${cardsHtml}
+
     </div>
-  </main>
+
+</div>
+
 </body>
-</html>`;
 
-      return {
-        status: 200,
-        headers: {
-          "Content-Type": "text/html; charset=utf-8"
-        },
-        body: html
-      };
+</html>
+`;
 
-    } catch (err) {
-      context.error(err);
+            return {
 
-      return {
-        status: 500,
-        headers: {
-          "Content-Type": "text/html; charset=utf-8"
-        },
-        body: `<h1>Yard Sale Error</h1><p>${String(err.message || err)}</p>`
-      };
+                status: 200,
+
+                headers: {
+                    "Content-Type": "text/html; charset=utf-8"
+                },
+
+                body: html
+            };
+
+        } catch (err) {
+
+            context.error(err);
+
+            return {
+
+                status: 500,
+
+                headers: {
+                    "Content-Type": "text/html; charset=utf-8"
+                },
+
+                body: `
+<h1>Yard Sale Error</h1>
+<pre>${String(err.message || err)}</pre>
+`
+            };
+        }
     }
-  }
 });
