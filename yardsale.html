@@ -1,341 +1,256 @@
-// GET YARD SALE ITEMS AS NORMAL HTML WEBPAGE
-app.http("GetYardSaleItems", {
-    methods: ["GET"],
-    authLevel: "anonymous",
-
-    handler: async (request, context) => {
-
-        context.log(`GetYardSaleItems HTML page called. Version: ${API_VERSION}`);
-
-        try {
-
-            const token = await getAccessToken();
-            const site = await getRangeBookerSite(token);
-
-            const itemRows = await getListItems(
-                token,
-                site.id,
-                "YardSaleItems"
-            );
-
-            const photoRows = await getListItems(
-                token,
-                site.id,
-                "YardSaleItemsPhotos"
-            );
-
-            // SAFE HTML ENCODING
-            function escapeHtml(value) {
-
-                return String(value || "")
-                    .replace(/&/g, "&amp;")
-                    .replace(/</g, "&lt;")
-                    .replace(/>/g, "&gt;")
-                    .replace(/"/g, "&quot;")
-                    .replace(/'/g, "&#039;");
-            }
-
-            // FORMAT PRICE
-            function formatPrice(value) {
-
-                const n = Number(value);
-
-                if (isNaN(n)) {
-                    return escapeHtml(value || "");
-                }
-
-                return "$" + n.toLocaleString("en-US", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                });
-            }
-
-            // BUILD ITEM HTML
-            let cardsHtml = "";
-
-            const openItems = itemRows.filter(item => {
-
-                const f = item.fields || {};
-
-                return (
-                    String(f.SaleOpenClosed || "")
-                        .trim()
-                        .toLowerCase() === "open"
-                );
-            });
-
-            for (const item of openItems) {
-
-                const f = item.fields || {};
-
-                const itemId = Number(item.id || f.ID || 0);
-
-                const matchingPhotos = photoRows.filter(photo => {
-
-                    const pf = photo.fields || {};
-
-                    return (
-                        Number(pf.YardSaleItemLockInColSP || 0) === itemId
-                    );
-                });
-
-                let firstImage = "";
-
-                if (matchingPhotos.length > 0) {
-
-                    const pf = matchingPhotos[0].fields || {};
-
-                    firstImage = buildImageDataUrl(
-                        pf.PhotoYardSaleBase64ColSP ||
-                        pf.Base64ColSP ||
-                        ""
-                    );
-                }
-
-                cardsHtml += `
-<div class="item-card">
-
-    <div class="photo-wrap">
-
-        ${
-            firstImage
-                ? `<img src="${firstImage}" alt="${escapeHtml(f.YardSaleItemNameColSP || "")}">`
-                : `<div class="no-photo">No Photo</div>`
-        }
-
-    </div>
-
-    <div class="item-body">
-
-        <h2>
-            ${escapeHtml(f.YardSaleItemNameColSP || "Untitled Item")}
-        </h2>
-
-        <div class="price">
-            ${formatPrice(f.AskingPrice || 0)}
-        </div>
-
-        <p class="description">
-            ${escapeHtml(f.YardSaleItemDescriptionColSP || "")}
-        </p>
-
-        <div class="details">
-
-            <span>
-                ${escapeHtml(f.ConditionColSP || "Unknown Condition")}
-            </span>
-
-            <span>
-                ${escapeHtml(f.SaleType || "Unknown Sale Type")}
-            </span>
-
-        </div>
-
-    </div>
-
-</div>
-`;
-            }
-
-            // NO ITEMS
-            if (!cardsHtml) {
-
-                cardsHtml = `
-<div class="empty">
-    No open yard sale items found.
-</div>
-`;
-            }
-
-            // FULL HTML PAGE
-            const html = `
 <!DOCTYPE html>
-
 <html lang="en">
-
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Yard Sale Items</title>
 
-<meta charset="UTF-8">
+  <style>
+    body {
+      margin: 0;
+      background: #f3efe7;
+      font-family: Arial, sans-serif;
+      color: #222;
+    }
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    header {
+      background: #3a2c20;
+      color: white;
+      text-align: center;
+      padding: 30px 20px;
+    }
 
-<title>Yard Sale Items</title>
+    header h1 {
+      margin: 0;
+      font-size: 42px;
+    }
 
-<style>
+    header p {
+      margin-top: 10px;
+      opacity: 0.9;
+    }
 
-body{
-    margin:0;
-    background:#f3efe7;
-    font-family:Arial,sans-serif;
-    color:#222;
-}
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 25px;
+    }
 
-header{
-    background:#3a2c20;
-    color:white;
-    text-align:center;
-    padding:30px 20px;
-}
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 24px;
+    }
 
-header h1{
-    margin:0;
-    font-size:42px;
-}
+    .item-card {
+      background: white;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 5px 18px rgba(0,0,0,0.14);
+    }
 
-header p{
-    margin-top:10px;
-    opacity:.9;
-}
+    .photo-wrap {
+      width: 100%;
+      height: 260px;
+      background: #ddd;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-.container{
-    max-width:1200px;
-    margin:auto;
-    padding:25px;
-}
+    .photo-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #eee;
+    }
 
-.grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
-    gap:24px;
-}
+    .no-photo {
+      font-size: 22px;
+      color: #666;
+    }
 
-.item-card{
-    background:white;
-    border-radius:18px;
-    overflow:hidden;
-    box-shadow:0 5px 18px rgba(0,0,0,.14);
-}
+    .item-body {
+      padding: 18px;
+    }
 
-.photo-wrap{
-    width:100%;
-    height:260px;
-    background:#ddd;
-    overflow:hidden;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-}
+    .item-body h2 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-size: 26px;
+      color: #2f2419;
+    }
 
-.photo-wrap img{
-    width:100%;
-    height:100%;
-    object-fit:contain;
-    background:#eee;
-}
+    .price {
+      color: #0d7a39;
+      font-size: 30px;
+      font-weight: bold;
+      margin-bottom: 14px;
+    }
 
-.no-photo{
-    font-size:22px;
-    color:#666;
-}
+    .description {
+      color: #444;
+      line-height: 1.5;
+      min-height: 50px;
+    }
 
-.item-body{
-    padding:18px;
-}
+    .details {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
 
-.item-body h2{
-    margin-top:0;
-    margin-bottom:10px;
-    font-size:26px;
-    color:#2f2419;
-}
+    .details span {
+      background: #efe4d2;
+      padding: 7px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: bold;
+      color: #3c2f24;
+    }
 
-.price{
-    color:#0d7a39;
-    font-size:30px;
-    font-weight:bold;
-    margin-bottom:14px;
-}
+    .empty, .loading, .error {
+      background: white;
+      padding: 30px;
+      border-radius: 18px;
+      text-align: center;
+      font-size: 22px;
+      box-shadow: 0 5px 18px rgba(0,0,0,0.1);
+    }
 
-.description{
-    color:#444;
-    line-height:1.5;
-    min-height:50px;
-}
-
-.details{
-    display:flex;
-    flex-wrap:wrap;
-    gap:10px;
-    margin-top:18px;
-}
-
-.details span{
-    background:#efe4d2;
-    padding:7px 12px;
-    border-radius:999px;
-    font-size:13px;
-    font-weight:bold;
-    color:#3c2f24;
-}
-
-.empty{
-    background:white;
-    padding:30px;
-    border-radius:18px;
-    text-align:center;
-    font-size:24px;
-    box-shadow:0 5px 18px rgba(0,0,0,.1);
-}
-
-</style>
-
+    .back-button {
+      display: inline-block;
+      margin-top: 14px;
+      color: white;
+      background: #6b4b32;
+      padding: 10px 18px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+  </style>
 </head>
 
 <body>
 
 <header>
-
-    <h1>Yard Sale Items</h1>
-
-    <p>
-        ${openItems.length} open item${openItems.length === 1 ? "" : "s"} available
-    </p>
-
+  <h1>Yard Sale Items</h1>
+  <p id="itemCount">Loading open items...</p>
+  <a class="back-button" href="memberhome.html">← Back</a>
 </header>
 
 <div class="container">
-
-    <div class="grid">
-
-        ${cardsHtml}
-
-    </div>
-
+  <div id="itemsGrid" class="grid">
+    <div class="loading">Loading yard sale items...</div>
+  </div>
 </div>
 
-</body>
+<script>
+  const API_URL = "/api/GetYardSaleItems";
 
-</html>
-`;
+  function escapeHtml(value) {
+    return String(value || "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
 
-            return {
-
-                status: 200,
-
-                headers: {
-                    "Content-Type": "text/html; charset=utf-8"
-                },
-
-                body: html
-            };
-
-        } catch (err) {
-
-            context.error(err);
-
-            return {
-
-                status: 500,
-
-                headers: {
-                    "Content-Type": "text/html; charset=utf-8"
-                },
-
-                body: `
-<h1>Yard Sale Error</h1>
-<pre>${String(err.message || err)}</pre>
-`
-            };
-        }
+  function formatPrice(value) {
+    if (value === null || value === undefined || value === "") {
+      return "";
     }
-});
+
+    const n = Number(value);
+
+    if (Number.isNaN(n)) {
+      return escapeHtml(value);
+    }
+
+    return "$" + n.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+
+  async function loadYardSaleItems() {
+    const grid = document.getElementById("itemsGrid");
+    const itemCount = document.getElementById("itemCount");
+
+    try {
+      const response = await fetch(API_URL);
+
+      if (!response.ok) {
+        throw new Error("API returned status " + response.status);
+      }
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.error || "API returned success false.");
+      }
+
+      const items = Array.isArray(data.items) ? data.items : [];
+
+      itemCount.textContent =
+        items.length + " open item" + (items.length === 1 ? "" : "s") + " available";
+
+      if (items.length === 0) {
+        grid.innerHTML = `<div class="empty">No open yard sale items found.</div>`;
+        return;
+      }
+
+      grid.innerHTML = items.map(item => {
+        const name = escapeHtml(item.itemName || item.title || "Untitled Item");
+        const description = escapeHtml(item.description || "");
+        const condition = escapeHtml(item.condition || "Unknown Condition");
+        const saleType = escapeHtml(item.saleType || "Unknown Sale Type");
+        const price = formatPrice(item.askingPrice);
+        const image = item.imageDataUrl || "";
+
+        return `
+          <div class="item-card">
+            <div class="photo-wrap">
+              ${
+                image
+                  ? `<img src="${image}" alt="${name}">`
+                  : `<div class="no-photo">No Photo</div>`
+              }
+            </div>
+
+            <div class="item-body">
+              <h2>${name}</h2>
+              <div class="price">${price}</div>
+              <p class="description">${description}</p>
+
+              <div class="details">
+                <span>${condition}</span>
+                <span>${saleType}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+    } catch (err) {
+      console.error(err);
+
+      itemCount.textContent = "Could not load yard sale items.";
+
+      grid.innerHTML = `
+        <div class="error">
+          Could not load yard sale items.<br><br>
+          ${escapeHtml(err.message)}
+        </div>
+      `;
+    }
+  }
+
+  loadYardSaleItems();
+</script>
+
+</body>
+</html>
