@@ -41,6 +41,13 @@
       color: #cbd5e1;
     }
 
+    .toolbar {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
     .login-link,
     .nav-link,
     button {
@@ -55,12 +62,14 @@
       border: none;
       cursor: pointer;
       box-shadow: 0 8px 18px rgba(0,0,0,0.35);
+      transition: background 0.15s ease, transform 0.15s ease;
     }
 
     .login-link:hover,
     .nav-link:hover,
     button:hover {
       background: #1d4ed8;
+      transform: translateY(-1px);
     }
 
     .cancel-btn {
@@ -70,13 +79,6 @@
 
     .cancel-btn:hover {
       background: #b91c1c;
-    }
-
-    .toolbar {
-      margin-bottom: 20px;
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
     }
 
     #status {
@@ -228,24 +230,47 @@
       .login-link {
         text-align: center;
       }
+
+      .toolbar {
+        flex-direction: column;
+      }
+
+      .toolbar a,
+      .toolbar button {
+        text-align: center;
+      }
     }
   </style>
 </head>
 
 <body>
   <div class="wrap">
+
     <div class="header">
       <div>
         <h1>RangeBooker</h1>
-        <div id="welcomeText" class="subtext">Loading calendar...</div>
+        <div id="welcomeText" class="subtext">
+          Loading calendar...
+        </div>
       </div>
 
-      <a id="loginBtn" class="login-link" href="/login.html">Logout</a>
+      <a id="loginBtn" class="login-link" href="/login.html">
+        Logout
+      </a>
     </div>
 
     <div class="toolbar">
-      <button onclick="loadCalendar()">Refresh Calendar</button>
-      <a class="nav-link" href="/mystats.html">My Stats</a>
+      <a class="nav-link" href="javascript:history.back()">
+        ← Back
+      </a>
+
+      <button onclick="loadCalendar()">
+        Refresh Calendar
+      </button>
+
+      <a class="nav-link" href="/mystats.html">
+        My Stats
+      </a>
     </div>
 
     <div class="legend">
@@ -257,7 +282,9 @@
     </div>
 
     <div id="status"></div>
+
     <div id="calendar" class="calendar-grid"></div>
+
   </div>
 
   <script>
@@ -270,15 +297,24 @@
     }
 
     const currentUser = JSON.parse(savedUser);
-    const memberId = currentUser.id || currentUser.ID || currentUser.Id || "";
-    const memberName = `${currentUser.firstName || ""} ${currentUser.lastName || ""}`.trim();
+
+    const memberId =
+      currentUser.id ||
+      currentUser.ID ||
+      currentUser.Id ||
+      "";
+
+    const memberName =
+      `${currentUser.firstName || ""} ${currentUser.lastName || ""}`.trim();
 
     document.getElementById("welcomeText").textContent =
       `Welcome ${memberName || "Member"}. View available, requested, and confirmed range days.`;
 
     document.getElementById("loginBtn").onclick = function (e) {
       e.preventDefault();
+
       sessionStorage.removeItem("rangebookerUser");
+
       window.location.href = "/login.html";
     };
 
@@ -288,26 +324,45 @@
 
     function isConfirmedStatus(value) {
       const status = normalize(value);
-      return status === "approved" || status === "confirmed" || status === "booked";
+
+      return (
+        status === "approved" ||
+        status === "confirmed" ||
+        status === "booked"
+      );
     }
 
     function isRequestedStatus(value) {
       const status = normalize(value);
-      return status === "requesting" || status === "requested" || status === "pending";
+
+      return (
+        status === "requesting" ||
+        status === "requested" ||
+        status === "pending"
+      );
     }
 
     function isDeniedStatus(value) {
       const status = normalize(value);
-      return status === "denied" || status === "rejected";
+
+      return (
+        status === "denied" ||
+        status === "rejected"
+      );
     }
 
     function isBlockingRequest(value) {
-      return isRequestedStatus(value) || isConfirmedStatus(value);
+      return (
+        isRequestedStatus(value) ||
+        isConfirmedStatus(value)
+      );
     }
 
     function getDateOnly(dateValue) {
       const d = new Date(dateValue);
+
       d.setHours(0, 0, 0, 0);
+
       return d;
     }
 
@@ -319,7 +374,9 @@
         return 999999;
       }
 
-      return Math.abs((a - b) / (1000 * 60 * 60 * 24));
+      return Math.abs(
+        (a - b) / (1000 * 60 * 60 * 24)
+      );
     }
 
     function formatDateText(dateString) {
@@ -355,25 +412,40 @@
       return myRequests.find(req => {
         const reqDateId = String(req.dateId || "");
         const calendarId = String(calendarItem.id || "");
+
         return reqDateId === calendarId;
       });
     }
 
     function getTooCloseRequest(myRequests, calendarItem) {
       return myRequests.find(req => {
-        if (!isBlockingRequest(req.status)) return false;
+
+        if (!isBlockingRequest(req.status)) {
+          return false;
+        }
 
         const reqDateId = String(req.dateId || "");
         const calendarId = String(calendarItem.id || "");
 
-        if (reqDateId === calendarId) return false;
-        if (!req.requestedDate) return false;
+        if (reqDateId === calendarId) {
+          return false;
+        }
 
-        return daysBetween(calendarItem.date, req.requestedDate) <= MIN_DAYS_BETWEEN_REQUESTS;
+        if (!req.requestedDate) {
+          return false;
+        }
+
+        return (
+          daysBetween(
+            calendarItem.date,
+            req.requestedDate
+          ) <= MIN_DAYS_BETWEEN_REQUESTS
+        );
       });
     }
 
     async function cancelRequest(requestId) {
+
       if (!requestId) {
         alert("Missing request ID.");
         return;
@@ -384,15 +456,19 @@
       }
 
       try {
+
         const response = await fetch("/api/DeleteRequest", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({ requestId })
+          body: JSON.stringify({
+            requestId
+          })
         });
 
         const text = await response.text();
+
         let data = {};
 
         if (text) {
@@ -404,44 +480,75 @@
         }
 
         if (!response.ok || data.success === false) {
-          alert(data.error || text || "Could not cancel request.");
+
+          alert(
+            data.error ||
+            text ||
+            "Could not cancel request."
+          );
+
           return;
         }
 
         alert("Request canceled.");
+
         loadCalendar();
 
       } catch (err) {
-        alert("Server error: " + err.message);
+
+        alert(
+          "Server error: " + err.message
+        );
       }
     }
 
     async function loadCalendar() {
-      const statusEl = document.getElementById("status");
-      const calendarEl = document.getElementById("calendar");
 
-      statusEl.textContent = "Loading calendar...";
+      const statusEl =
+        document.getElementById("status");
+
+      const calendarEl =
+        document.getElementById("calendar");
+
+      statusEl.textContent =
+        "Loading calendar...";
+
       calendarEl.innerHTML = "";
 
       try {
-        const locationsResponse = await fetch("/api/GetLocations");
-        const locationsData = await locationsResponse.json();
 
-        if (!locationsResponse.ok || !locationsData.success) {
-          statusEl.textContent = "Could not load calendar data.";
+        const locationsResponse =
+          await fetch("/api/GetLocations");
+
+        const locationsData =
+          await locationsResponse.json();
+
+        if (
+          !locationsResponse.ok ||
+          !locationsData.success
+        ) {
+
+          statusEl.textContent =
+            "Could not load calendar data.";
+
           calendarEl.innerHTML =
             `<div class="empty-message"><pre>${JSON.stringify(locationsData, null, 2)}</pre></div>`;
+
           return;
         }
 
         let myRequests = [];
 
         if (memberId) {
-          const requestResponse = await fetch(
-            `/api/GetMyRequests?memberId=${encodeURIComponent(memberId)}`
-          );
 
-          const requestText = await requestResponse.text();
+          const requestResponse =
+            await fetch(
+              `/api/GetMyRequests?memberId=${encodeURIComponent(memberId)}`
+            );
+
+          const requestText =
+            await requestResponse.text();
+
           let requestData = {};
 
           if (requestText) {
@@ -452,118 +559,222 @@
             }
           }
 
-          if (requestResponse.ok && requestData.success) {
-            myRequests = requestData.requests || [];
+          if (
+            requestResponse.ok &&
+            requestData.success
+          ) {
+            myRequests =
+              requestData.requests || [];
           }
         }
 
-        const items = (locationsData.locations || [])
-          .map(item => ({
-            id: item.id,
-            date: item.dateTimeToSchedule,
-            start: item.startTime,
-            end: item.endTime,
-            status: item.availableOrBooked
-          }))
-          .filter(item => item.id && item.date)
-          .sort((a, b) => new Date(a.date) - new Date(b.date));
+        const items =
+          (locationsData.locations || [])
+            .map(item => ({
+              id: item.id,
+              date: item.dateTimeToSchedule,
+              start: item.startTime,
+              end: item.endTime,
+              status: item.availableOrBooked
+            }))
+            .filter(item =>
+              item.id && item.date
+            )
+            .sort((a, b) =>
+              new Date(a.date) - new Date(b.date)
+            );
 
         if (!items.length) {
-          statusEl.textContent = "No calendar items found.";
+
+          statusEl.textContent =
+            "No calendar items found.";
+
           calendarEl.innerHTML =
             `<div class="empty-message">There are no days to display.</div>`;
+
           return;
         }
 
-        const requestedCount = myRequests.filter(r => isRequestedStatus(r.status)).length;
-        const confirmedCount = myRequests.filter(r => isConfirmedStatus(r.status)).length;
+        const requestedCount =
+          myRequests.filter(r =>
+            isRequestedStatus(r.status)
+          ).length;
+
+        const confirmedCount =
+          myRequests.filter(r =>
+            isConfirmedStatus(r.status)
+          ).length;
 
         statusEl.textContent =
           `${items.length} day(s) loaded. You have ${requestedCount} requested and ${confirmedCount} confirmed.`;
 
-        calendarEl.innerHTML = items.map(item => {
-          const calendarStatus = normalize(item.status);
-          const isAvailable = calendarStatus === "available";
+        calendarEl.innerHTML =
+          items.map(item => {
 
-          const myRequest = getRequestForDate(myRequests, item);
-          const tooCloseRequest = getTooCloseRequest(myRequests, item);
+            const calendarStatus =
+              normalize(item.status);
 
-          let cardClass = isAvailable ? "available" : "booked";
+            const isAvailable =
+              calendarStatus === "available";
 
-          let mainBadge = isAvailable
-            ? `<span class="badge available">Available</span>`
-            : `<span class="badge booked">Booked</span>`;
+            const myRequest =
+              getRequestForDate(
+                myRequests,
+                item
+              );
 
-          let personalBadge = "";
-          let hintText = "";
-          let cancelButton = "";
+            const tooCloseRequest =
+              getTooCloseRequest(
+                myRequests,
+                item
+              );
 
-          if (myRequest) {
-            if (isConfirmedStatus(myRequest.status)) {
-              cardClass = "confirmed";
-              personalBadge = `<span class="badge confirmed">Confirmed for you</span>`;
-              hintText = "This date is confirmed for your account.";
-            } else if (isDeniedStatus(myRequest.status)) {
-              cardClass = isAvailable ? "available" : "booked";
-              personalBadge = `<span class="badge blocked">Previously denied</span>`;
-              hintText = isAvailable
-                ? "This request was denied before. You may request again if it is not too close to another active request."
-                : "This request was denied before, but this date is not currently available.";
+            let cardClass =
+              isAvailable
+                ? "available"
+                : "booked";
+
+            let mainBadge =
+              isAvailable
+                ? `<span class="badge available">Available</span>`
+                : `<span class="badge booked">Booked</span>`;
+
+            let personalBadge = "";
+            let hintText = "";
+            let cancelButton = "";
+
+            if (myRequest) {
+
+              if (
+                isConfirmedStatus(
+                  myRequest.status
+                )
+              ) {
+
+                cardClass = "confirmed";
+
+                personalBadge =
+                  `<span class="badge confirmed">Confirmed for you</span>`;
+
+                hintText =
+                  "This date is confirmed for your account.";
+
+              } else if (
+                isDeniedStatus(
+                  myRequest.status
+                )
+              ) {
+
+                cardClass =
+                  isAvailable
+                    ? "available"
+                    : "booked";
+
+                personalBadge =
+                  `<span class="badge blocked">Previously denied</span>`;
+
+                hintText =
+                  isAvailable
+                    ? "This request was denied before. You may request again if it is not too close to another active request."
+                    : "This request was denied before, but this date is not currently available.";
+
+              } else {
+
+                cardClass = "requested";
+
+                personalBadge =
+                  `<span class="badge requested">Requested by you</span>`;
+
+                hintText =
+                  "You have already requested this date.";
+
+                cancelButton = `
+                  <button
+                    class="cancel-btn"
+                    onclick="cancelRequest('${myRequest.id}')">
+                    Cancel Request
+                  </button>
+                `;
+              }
+
+            } else if (
+              tooCloseRequest &&
+              isAvailable
+            ) {
+
+              cardClass = "blocked";
+
+              personalBadge =
+                `<span class="badge blocked">Too close to another request</span>`;
+
+              hintText =
+                `You must leave at least ${MIN_DAYS_BETWEEN_REQUESTS} full days between active requests.`;
+
+            } else if (isAvailable) {
+
+              hintText =
+                "Click to request this booking.";
+
             } else {
-              cardClass = "requested";
-              personalBadge = `<span class="badge requested">Requested by you</span>`;
-              hintText = "You have already requested this date.";
 
-              cancelButton = `
-                <button class="cancel-btn" onclick="cancelRequest('${myRequest.id}')">
-                  Cancel Request
-                </button>
+              hintText =
+                "This date is not currently available.";
+            }
+
+            const cardHtml = `
+              <div class="day-card ${cardClass}">
+
+                <div class="date-text">
+                  ${formatDateText(item.date)}
+                </div>
+
+                <div class="time-text">
+                  ${item.start || ""}
+                  ${item.start && item.end ? " - " : ""}
+                  ${item.end || ""}
+                </div>
+
+                <div>
+                  ${mainBadge}
+                  ${personalBadge}
+                </div>
+
+                <div class="hint-text">
+                  ${hintText}
+                </div>
+
+                ${cancelButton}
+
+              </div>
+            `;
+
+            const canClick =
+              isAvailable &&
+              !myRequest &&
+              !tooCloseRequest;
+
+            if (canClick) {
+
+              return `
+                <a
+                  class="card-link"
+                  href="${buildRequestUrl(item)}">
+
+                  ${cardHtml}
+
+                </a>
               `;
             }
-          } else if (tooCloseRequest && isAvailable) {
-            cardClass = "blocked";
-            personalBadge = `<span class="badge blocked">Too close to another request</span>`;
-            hintText =
-              `You must leave at least ${MIN_DAYS_BETWEEN_REQUESTS} full days between active requests.`;
-          } else if (isAvailable) {
-            hintText = "Click to request this booking.";
-          } else {
-            hintText = "This date is not currently available.";
-          }
 
-          const cardHtml = `
-            <div class="day-card ${cardClass}">
-              <div class="date-text">${formatDateText(item.date)}</div>
+            return cardHtml;
 
-              <div class="time-text">
-                ${item.start || ""}${item.start && item.end ? " - " : ""}${item.end || ""}
-              </div>
-
-              <div>
-                ${mainBadge}
-                ${personalBadge}
-              </div>
-
-              <div class="hint-text">${hintText}</div>
-              ${cancelButton}
-            </div>
-          `;
-
-          const canClick = isAvailable && !myRequest && !tooCloseRequest;
-
-          if (canClick) {
-            return `
-              <a class="card-link" href="${buildRequestUrl(item)}">
-                ${cardHtml}
-              </a>
-            `;
-          }
-
-          return cardHtml;
-        }).join("");
+          }).join("");
 
       } catch (error) {
-        statusEl.textContent = "Error loading calendar.";
+
+        statusEl.textContent =
+          "Error loading calendar.";
+
         calendarEl.innerHTML =
           `<div class="empty-message">${error.message}</div>`;
       }
