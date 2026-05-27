@@ -19,9 +19,7 @@
       --shadow: rgba(0,0,0,0.45);
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -36,7 +34,7 @@
     header {
       background: rgba(20, 15, 10, 0.94);
       border-bottom: 1px solid var(--border);
-      padding: 22px 18px;
+      padding: 18px;
       position: sticky;
       top: 0;
       z-index: 5;
@@ -46,42 +44,36 @@
     .header-inner {
       max-width: 1200px;
       margin: auto;
-      display: flex;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
       align-items: center;
-      justify-content: space-between;
       gap: 16px;
-      flex-wrap: wrap;
+    }
+
+    .title-block {
+      text-align: center;
     }
 
     .title-block h1 {
       margin: 0;
-      font-size: 38px;
-      letter-spacing: 0.5px;
+      font-size: 36px;
     }
 
     .title-block p {
       margin: 7px 0 0;
       color: var(--muted);
-      font-size: 15px;
     }
 
-    .back-button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
+    .back-button,
+    .close-button {
       color: #1b130b;
       background: var(--gold);
       padding: 11px 18px;
       border-radius: 999px;
       text-decoration: none;
       font-weight: bold;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.28);
-      transition: transform 0.15s ease, filter 0.15s ease;
-    }
-
-    .back-button:hover {
-      transform: translateY(-1px);
-      filter: brightness(1.08);
+      border: 0;
+      cursor: pointer;
     }
 
     .container {
@@ -102,6 +94,13 @@
       border-radius: 20px;
       overflow: hidden;
       box-shadow: 0 14px 34px var(--shadow);
+      cursor: pointer;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+
+    .item-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(214,168,95,0.45);
     }
 
     .photo-wrap {
@@ -137,7 +136,6 @@
     .item-body h2 {
       margin: 0 0 10px;
       font-size: 24px;
-      color: var(--text);
     }
 
     .price {
@@ -180,26 +178,115 @@
       text-align: center;
       font-size: 21px;
       box-shadow: 0 14px 34px var(--shadow);
+    }
+
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.78);
+      z-index: 20;
+      padding: 18px;
+      overflow-y: auto;
+    }
+
+    .modal-backdrop.open {
+      display: block;
+    }
+
+    .modal-card {
+      max-width: 920px;
+      margin: 30px auto;
+      background: linear-gradient(180deg, #2d261e, #18140f);
+      border: 1px solid rgba(214,168,95,0.35);
+      border-radius: 24px;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.65);
+      overflow: hidden;
+    }
+
+    .modal-photo {
+      width: 100%;
+      max-height: 520px;
+      background: #080706;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-photo img {
+      width: 100%;
+      max-height: 520px;
+      object-fit: contain;
+    }
+
+    .modal-body {
+      padding: 24px;
+    }
+
+    .modal-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+      margin-bottom: 14px;
+    }
+
+    .modal-body h2 {
+      margin: 0;
+      font-size: 34px;
+    }
+
+    .modal-description {
+      color: var(--muted);
+      line-height: 1.6;
+      white-space: pre-wrap;
+      margin-top: 18px;
+      font-size: 17px;
+    }
+
+    .detail-table {
+      margin-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .detail-row {
+      display: grid;
+      grid-template-columns: 150px 1fr;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .detail-label {
+      color: #f2d39d;
+      font-weight: bold;
+    }
+
+    .detail-value {
       color: var(--text);
     }
 
-    .error {
-      color: #ffb4a8;
-    }
-
-    @media (max-width: 600px) {
+    @media (max-width: 700px) {
       .header-inner {
-        justify-content: center;
+        grid-template-columns: 1fr;
         text-align: center;
       }
 
-      .title-block h1 {
-        font-size: 32px;
+      .back-button {
+        justify-self: start;
       }
 
-      .back-button {
-        width: 100%;
-        max-width: 260px;
+      .title-block h1 {
+        font-size: 31px;
+      }
+
+      .modal-top {
+        flex-direction: column;
+      }
+
+      .detail-row {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -209,12 +296,14 @@
 
 <header>
   <div class="header-inner">
+    <a class="back-button" href="memberhome.html">← Back</a>
+
     <div class="title-block">
       <h1>Yard Sale Items</h1>
       <p id="itemCount">Loading open items...</p>
     </div>
 
-    <a class="back-button" href="memberhome.html">← Back to Member Home</a>
+    <div></div>
   </div>
 </header>
 
@@ -224,8 +313,50 @@
   </div>
 </div>
 
+<div id="itemModal" class="modal-backdrop">
+  <div class="modal-card">
+    <div id="modalPhoto" class="modal-photo"></div>
+
+    <div class="modal-body">
+      <div class="modal-top">
+        <div>
+          <h2 id="modalTitle"></h2>
+          <div id="modalPrice" class="price"></div>
+        </div>
+
+        <button class="close-button" onclick="closeItemModal()">Close</button>
+      </div>
+
+      <div id="modalDescription" class="modal-description"></div>
+
+      <div class="detail-table">
+        <div class="detail-row">
+          <div class="detail-label">Condition</div>
+          <div id="modalCondition" class="detail-value"></div>
+        </div>
+
+        <div class="detail-row">
+          <div class="detail-label">Sale Type</div>
+          <div id="modalSaleType" class="detail-value"></div>
+        </div>
+
+        <div class="detail-row">
+          <div class="detail-label">Status</div>
+          <div id="modalStatus" class="detail-value"></div>
+        </div>
+
+        <div class="detail-row">
+          <div class="detail-label">Date Added</div>
+          <div id="modalDateAdded" class="detail-value"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
   const API_URL = "/api/GetYardSaleItems";
+  let yardSaleItems = [];
 
   function escapeHtml(value) {
     return String(value || "")
@@ -253,6 +384,22 @@
     });
   }
 
+  function formatDate(value) {
+    if (!value) return "Not listed";
+
+    const d = new Date(value);
+
+    if (Number.isNaN(d.getTime())) {
+      return escapeHtml(value);
+    }
+
+    return d.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric"
+    });
+  }
+
   async function loadYardSaleItems() {
     const grid = document.getElementById("itemsGrid");
     const itemCount = document.getElementById("itemCount");
@@ -270,17 +417,17 @@
         throw new Error(data.error || "API returned success false.");
       }
 
-      const items = Array.isArray(data.items) ? data.items : [];
+      yardSaleItems = Array.isArray(data.items) ? data.items : [];
 
       itemCount.textContent =
-        items.length + " open item" + (items.length === 1 ? "" : "s") + " available";
+        yardSaleItems.length + " open item" + (yardSaleItems.length === 1 ? "" : "s") + " available";
 
-      if (items.length === 0) {
+      if (yardSaleItems.length === 0) {
         grid.innerHTML = `<div class="empty">No open yard sale items found.</div>`;
         return;
       }
 
-      grid.innerHTML = items.map(item => {
+      grid.innerHTML = yardSaleItems.map((item, index) => {
         const name = escapeHtml(item.itemName || item.title || "Untitled Item");
         const description = escapeHtml(item.description || "No description listed.");
         const condition = escapeHtml(item.condition || "Unknown Condition");
@@ -289,7 +436,7 @@
         const image = item.imageDataUrl || "";
 
         return `
-          <div class="item-card">
+          <div class="item-card" onclick="openItemModal(${index})">
             <div class="photo-wrap">
               ${
                 image
@@ -325,6 +472,54 @@
       `;
     }
   }
+
+  function openItemModal(index) {
+    const item = yardSaleItems[index];
+
+    if (!item) return;
+
+    const name = escapeHtml(item.itemName || item.title || "Untitled Item");
+    const image = item.imageDataUrl || "";
+
+    document.getElementById("modalTitle").innerHTML = name;
+    document.getElementById("modalPrice").innerHTML = formatPrice(item.askingPrice);
+    document.getElementById("modalDescription").innerHTML =
+      escapeHtml(item.description || "No description listed.");
+
+    document.getElementById("modalCondition").innerHTML =
+      escapeHtml(item.condition || "Unknown Condition");
+
+    document.getElementById("modalSaleType").innerHTML =
+      escapeHtml(item.saleType || "Unknown Sale Type");
+
+    document.getElementById("modalStatus").innerHTML =
+      escapeHtml(item.saleOpenClosed || "Open");
+
+    document.getElementById("modalDateAdded").innerHTML =
+      formatDate(item.dateAdded);
+
+    document.getElementById("modalPhoto").innerHTML = image
+      ? `<img src="${image}" alt="${name}">`
+      : `<div class="no-photo">No Photo</div>`;
+
+    document.getElementById("itemModal").classList.add("open");
+  }
+
+  function closeItemModal() {
+    document.getElementById("itemModal").classList.remove("open");
+  }
+
+  document.getElementById("itemModal").addEventListener("click", function(event) {
+    if (event.target.id === "itemModal") {
+      closeItemModal();
+    }
+  });
+
+  document.addEventListener("keydown", function(event) {
+    if (event.key === "Escape") {
+      closeItemModal();
+    }
+  });
 
   loadYardSaleItems();
 </script>
