@@ -48,6 +48,14 @@
     margin-bottom: 25px;
   }
 
+  .status {
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 16px;
+    padding: 20px;
+    color: #cbd5e1;
+  }
+
   .grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -63,12 +71,21 @@
   }
 
   .pic {
-    height: 190px;
+    width: 100%;
+    height: 210px;
+    background: linear-gradient(135deg, #1e293b, #475569);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 72px;
-    background: linear-gradient(135deg, #1e293b, #475569);
+    color: #cbd5e1;
+    font-size: 18px;
+    text-align: center;
+  }
+
+  .pic img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
   .body {
@@ -124,6 +141,17 @@
     text-align: center;
     font-size: 14px;
   }
+
+  @media (max-width: 700px) {
+    .topbar {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    h1 {
+      font-size: 28px;
+    }
+  }
 </style>
 </head>
 
@@ -135,7 +163,7 @@
     <div>
       <h1>🏷 RangeBooker Yard Sale</h1>
       <div class="sub">
-        Slightly suspicious items. Questionable condition. Serious bidders only.
+        Items listed by members. Check back often for new listings.
       </div>
     </div>
 
@@ -144,120 +172,146 @@
     </a>
   </div>
 
-  <div class="grid">
-
-    <div class="item">
-      <div class="pic">☀️</div>
-      <div class="body">
-        <div class="title">Pocket Full of Sunshine</div>
-        <div class="desc">
-          Gently used. Still warm. May brighten your day or void your warranty.
-        </div>
-        <div class="meta">
-          Listed: May 25, 2026<br>
-          Seller: Definitely Not Natasha Bedingfield
-        </div>
-        <div class="price">$7 or best offer</div>
-        <button onclick="placeBid('Pocket Full of Sunshine')">Place Bid</button>
-      </div>
-    </div>
-
-    <div class="item">
-      <div class="pic">🪨</div>
-      <div class="body">
-        <div class="title">Premium Fool’s Gold</div>
-        <div class="desc">
-          Looks expensive from far away. Even better if you do not inspect it.
-        </div>
-        <div class="meta">
-          Listed: May 24, 2026<br>
-          Seller: Shady Pete
-        </div>
-        <div class="price">$19.99 OBO</div>
-        <button onclick="placeBid('Premium Fool’s Gold')">Place Bid</button>
-      </div>
-    </div>
-
-    <div class="item">
-      <div class="pic">🧦</div>
-      <div class="body">
-        <div class="title">One Left Sock</div>
-        <div class="desc">
-          Right sock disappeared under mysterious laundry-related circumstances.
-        </div>
-        <div class="meta">
-          Listed: May 22, 2026<br>
-          Seller: Laundry Survivor
-        </div>
-        <div class="price">Free, but emotionally costly</div>
-        <button onclick="placeBid('One Left Sock')">Place Bid</button>
-      </div>
-    </div>
-
-    <div class="item">
-      <div class="pic">🫙</div>
-      <div class="body">
-        <div class="title">Jar of Fresh Air</div>
-        <div class="desc">
-          Locally sourced. Organic. Opened once to verify freshness.
-        </div>
-        <div class="meta">
-          Listed: May 21, 2026<br>
-          Seller: AirBnB
-        </div>
-        <div class="price">$3.50 or trade for silence</div>
-        <button onclick="placeBid('Jar of Fresh Air')">Place Bid</button>
-      </div>
-    </div>
-
-    <div class="item">
-      <div class="pic">🦄</div>
-      <div class="body">
-        <div class="title">Invisible Unicorn</div>
-        <div class="desc">
-          Very rare. Cannot be seen, touched, or proven. Comes with imaginary saddle.
-        </div>
-        <div class="meta">
-          Listed: May 20, 2026<br>
-          Seller: Wizard Gary
-        </div>
-        <div class="price">$1,000,000 OBO</div>
-        <button onclick="placeBid('Invisible Unicorn')">Place Bid</button>
-      </div>
-    </div>
-
-    <div class="item">
-      <div class="pic">🥔</div>
-      <div class="body">
-        <div class="title">Motivational Potato</div>
-        <div class="desc">
-          Sits quietly on your desk and judges your life choices.
-        </div>
-        <div class="meta">
-          Listed: May 19, 2026<br>
-          Seller: Spud Life Coach
-        </div>
-        <div class="price">$12 firm</div>
-        <button onclick="placeBid('Motivational Potato')">Place Bid</button>
-      </div>
-    </div>
-
+  <div id="yardSaleStatus" class="status">
+    Loading yard sale items...
   </div>
 
+  <div id="yardSaleGrid" class="grid" style="display:none;"></div>
+
   <div class="note">
-    Demo page only. No actual sunshine, unicorns, potatoes, or legal warranties included.
+    Yard sale items are loaded from SharePoint.
   </div>
 
 </div>
 
 <script>
+const API_BASE = "https://rangebooker-api.azurewebsites.net/api";
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function formatPrice(value) {
+  if (value === null || value === undefined || value === "") {
+    return "Best Offer";
+  }
+
+  const numberValue = Number(value);
+
+  if (isNaN(numberValue)) {
+    return escapeHtml(value);
+  }
+
+  return "$" + numberValue.toLocaleString();
+}
+
+function formatDate(value) {
+  if (!value) {
+    return "";
+  }
+
+  const date = new Date(value);
+
+  if (isNaN(date.getTime())) {
+    return escapeHtml(value);
+  }
+
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric"
+  });
+}
+
+async function loadYardSaleItems() {
+  const statusBox = document.getElementById("yardSaleStatus");
+  const grid = document.getElementById("yardSaleGrid");
+
+  statusBox.style.display = "block";
+  grid.style.display = "none";
+  statusBox.textContent = "Loading yard sale items...";
+
+  try {
+    const response = await fetch(`${API_BASE}/GetYardSaleItems`);
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || "Unable to load yard sale items.");
+    }
+
+    if (!data.items || data.items.length === 0) {
+      statusBox.textContent = "No yard sale items are listed yet.";
+      return;
+    }
+
+    grid.innerHTML = "";
+
+    data.items.forEach(item => {
+      const card = document.createElement("div");
+      card.className = "item";
+
+      const itemName = escapeHtml(item.itemName || item.title || "Untitled Item");
+      const description = escapeHtml(item.description || "");
+      const price = formatPrice(item.askingPrice);
+      const status = escapeHtml(item.status || "");
+      const dateAdded = formatDate(item.dateAdded);
+      const image = item.imageDataUrl || "";
+
+      card.innerHTML = `
+        <div class="pic">
+          ${
+            image
+              ? `<img src="${image}" alt="${itemName}">`
+              : `<div>No Photo</div>`
+          }
+        </div>
+
+        <div class="body">
+          <div class="title">${itemName}</div>
+
+          <div class="desc">
+            ${description || "No description provided."}
+          </div>
+
+          <div class="meta">
+            ${dateAdded ? `Listed: ${dateAdded}<br>` : ""}
+            ${status ? `Status: ${status}` : ""}
+          </div>
+
+          <div class="price">${price}</div>
+
+          <button onclick="placeBid('${itemName.replaceAll("'", "\\'")}')">
+            Place Bid
+          </button>
+        </div>
+      `;
+
+      grid.appendChild(card);
+    });
+
+    statusBox.style.display = "none";
+    grid.style.display = "grid";
+
+  } catch (err) {
+    console.error(err);
+    statusBox.textContent = "Could not load yard sale items: " + err.message;
+  }
+}
+
 function placeBid(itemName) {
   alert(
-    "Bid placed for: " +
+    "Bid selected for: " +
     itemName +
-    "\n\nYour offer has been sent directly to absolutely nobody yet."
+    "\n\nBid/contact feature can be connected next."
   );
 }
+
+document.addEventListener("DOMContentLoaded", loadYardSaleItems);
 </script>
 
 </body>
