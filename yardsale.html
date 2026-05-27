@@ -1,85 +1,109 @@
-//
 // GET YARD SALE ITEMS WITH PHOTOS
-//
 app.http("GetYardSaleItems", {
-    methods: ["GET"],
-    authLevel: "anonymous",
-    handler: async (request, context) => {
-        context.log(`GetYardSaleItems called. Version: ${API_VERSION}`);
+  methods: ["GET"],
+  authLevel: "anonymous",
 
-        try {
-            const token = await getAccessToken();
-            const site = await getRangeBookerSite(token);
+  handler: async (request, context) => {
+    context.log(`GetYardSaleItems called. Version: ${API_VERSION}`);
 
-            const itemRows = await getListItems(token, site.id, "YardSaleItems");
-            const photoRows = await getListItems(token, site.id, "YardSaleItemsPhotos");
+    try {
+      const token = await getAccessToken();
+      const site = await getRangeBookerSite(token);
 
-            const items = itemRows
-                .filter(item => {
-                    const f = item.fields || {};
-                    return String(f.SaleOpenClosed || "").trim().toLowerCase() === "open";
-                })
-                .map(item => {
-                    const f = item.fields || {};
-                    const itemId = Number(f.ID || item.id || 0);
+      const itemRows = await getListItems(token, site.id, "YardSaleItems");
+      const photoRows = await getListItems(token, site.id, "YardSaleItemsPhotos");
 
-                    const photos = photoRows
-                        .filter(photo => {
-                            const pf = photo.fields || {};
-                            return Number(pf.YardSaleItemLockInIDColSP || 0) === itemId;
-                        })
-                        .map(photo => {
-                            const pf = photo.fields || {};
+      const items = itemRows
+        .filter(item => {
+          const f = item.fields || {};
 
-                            return {
-                                id: photo.id,
-                                title: pf.Title || "",
-                                notes: pf.PhotoNotesColSP || "",
-                                image: buildImageDataUrl(
-                                    pf.PhotoYardSaleBase64ColSP ||
-                                    pf.Base64ColSP ||
-                                    ""
-                                )
-                            };
-                        })
-                        .filter(photo => photo.image);
+          return (
+            String(f.SaleOpenClosed || "")
+              .trim()
+              .toLowerCase() === "open"
+          );
+        })
+        .map(item => {
+          const f = item.fields || {};
 
-                    return {
-                        id: itemId,
-                        title: f.YardSaleItemNameColSP || "Untitled Item",
-                        itemName: f.YardSaleItemNameColSP || "Untitled Item",
-                        description: f.YardSaleItemDescriptionColSP || "",
-                        askingPrice: f.AskingPrice || "",
-                        condition: f.ConditionColSP || "",
-                        saleType: f.SaleType || "",
-                        saleOpenClosed: f.SaleOpenClosed || "",
-                        dateAdded: f.DateTimeAdded || f.Created || "",
-                        photos: photos,
-                        imageDataUrl: photos.length > 0 ? photos[0].image : ""
-                    };
-                });
+          // Main Yard Sale item ID
+          const itemId = Number(item.id || f.ID || 0);
 
-            return {
-                status: 200,
-                jsonBody: {
-                    success: true,
-                    version: API_VERSION,
-                    count: items.length,
-                    items: items
-                }
-            };
+          // Match photos to this item
+          const photos = photoRows
+            .filter(photo => {
+              const pf = photo.fields || {};
 
-        } catch (err) {
-            context.error(err);
+              return (
+                Number(pf.YardSaleItemLockInColSP || 0) === itemId
+              );
+            })
+            .map(photo => {
+              const pf = photo.fields || {};
 
-            return {
-                status: 500,
-                jsonBody: {
-                    success: false,
-                    version: API_VERSION,
-                    error: err.message
-                }
-            };
+              return {
+                id: photo.id,
+                title: pf.Title || "",
+                notes: pf.PhotoNotesColSP || "",
+
+                image: buildImageDataUrl(
+                  pf.PhotoYardSaleBase64ColSP ||
+                  pf.Base64ColSP ||
+                  ""
+                )
+              };
+            })
+            .filter(photo => photo.image);
+
+          return {
+            id: itemId,
+
+            title: f.YardSaleItemNameColSP || "Untitled Item",
+            itemName: f.YardSaleItemNameColSP || "Untitled Item",
+
+            description: f.YardSaleItemDescriptionColSP || "",
+            condition: f.ConditionColSP || "",
+            saleType: f.SaleType || "",
+            askingPrice: f.AskingPrice || "",
+
+            saleOpenClosed: f.SaleOpenClosed || "",
+
+            dateAdded:
+              f.DateTimeAdded ||
+              f.Created ||
+              "",
+
+            photos: photos,
+
+            // First image for easy display
+            imageDataUrl:
+              photos.length > 0
+                ? photos[0].image
+                : ""
+          };
+        });
+
+      return {
+        status: 200,
+        jsonBody: {
+          success: true,
+          version: API_VERSION,
+          count: items.length,
+          items: items
         }
+      };
+
+    } catch (err) {
+      context.error(err);
+
+      return {
+        status: 500,
+        jsonBody: {
+          success: false,
+          version: API_VERSION,
+          error: err.message
+        }
+      };
     }
+  }
 });
