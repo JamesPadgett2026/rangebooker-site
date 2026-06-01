@@ -81,6 +81,25 @@
       resize: vertical;
     }
 
+    .password-wrap {
+      display: grid;
+      gap: 8px;
+    }
+
+    .show-password-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: #334155;
+      user-select: none;
+    }
+
+    .show-password-label input {
+      width: auto;
+      margin: 0;
+    }
+
     .btn {
       background: #2563eb;
       color: white;
@@ -154,7 +173,15 @@
 
           <input id="email" type="email" placeholder="Email" required />
           <input id="phone" placeholder="Phone (optional)" />
-          <input id="password" type="password" placeholder="Password" required />
+
+          <div class="password-wrap">
+            <input id="password" type="password" placeholder="Password" required />
+
+            <label class="show-password-label">
+              <input id="showPassword" type="checkbox" />
+              Show password
+            </label>
+          </div>
 
           <textarea id="notes" placeholder="Notes (optional)"></textarea>
 
@@ -171,6 +198,12 @@
     const form = document.getElementById("createAccountForm");
     const message = document.getElementById("message");
     const btn = document.getElementById("submitButton");
+    const passwordInput = document.getElementById("password");
+    const showPassword = document.getElementById("showPassword");
+
+    showPassword.addEventListener("change", () => {
+      passwordInput.type = showPassword.checked ? "text" : "password";
+    });
 
     function showMessage(text, type) {
       message.textContent = text;
@@ -221,6 +254,7 @@
         }
 
         let data = {};
+
         try {
           data = await response.json();
         } catch (jsonErr) {
@@ -229,6 +263,7 @@
 
         showMessage(data.message || "Account created!", "success");
         form.reset();
+        passwordInput.type = "password";
 
       } catch (err) {
         showMessage("Server not reachable: " + err.message, "error");
