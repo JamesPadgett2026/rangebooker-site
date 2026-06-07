@@ -26,7 +26,28 @@
       border: 1px solid rgba(148, 163, 184, 0.24);
       border-radius: 22px;
       box-shadow: 0 20px 50px rgba(0,0,0,0.45);
-      padding: 28px;
+      padding: 72px 28px 28px 28px;
+      position: relative;
+    }
+
+    .back-button {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: rgba(148, 163, 184, 0.16);
+      color: #e5e7eb;
+      border: 1px solid rgba(148, 163, 184, 0.24);
+      border-radius: 12px;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: background 0.15s ease, transform 0.15s ease;
+    }
+
+    .back-button:hover {
+      background: rgba(148, 163, 184, 0.28);
+      transform: translateY(-1px);
     }
 
     h1 {
@@ -57,8 +78,7 @@
       align-items: center;
     }
 
-    button,
-    a.button {
+    button {
       display: inline-block;
       border: 0;
       border-radius: 12px;
@@ -79,12 +99,6 @@
       cursor: not-allowed;
     }
 
-    a.button {
-      background: rgba(148, 163, 184, 0.16);
-      color: #e5e7eb;
-      border: 1px solid rgba(148, 163, 184, 0.24);
-    }
-
     label {
       display: flex;
       gap: 10px;
@@ -97,12 +111,35 @@
       margin-top: 2px;
       transform: scale(1.2);
     }
+
+    @media (max-width: 600px) {
+      .wrap {
+        padding: 16px;
+      }
+
+      .card {
+        padding: 68px 18px 24px 18px;
+        border-radius: 18px;
+      }
+
+      .back-button {
+        top: 16px;
+        left: 16px;
+        font-size: 13px;
+        padding: 9px 13px;
+      }
+    }
   </style>
 </head>
 
 <body>
   <div class="wrap">
     <div class="card">
+
+      <a class="back-button" href="/login.html">
+        ← Back to Login
+      </a>
+
       <h1 id="rulesTitle">Rules and Regulations</h1>
 
       <div id="versionText" class="message"></div>
@@ -116,7 +153,6 @@
 
       <div class="actions">
         <button id="agreeButton" disabled>I Agree</button>
-        <a class="button" href="/login.html">Back to Login</a>
       </div>
     </div>
   </div>
