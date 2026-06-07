@@ -1,1 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rules and Regulations</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #020617 0%, #111827 55%, #0f172a 100%);
+      color: #e5e7eb;
+      min-height: 100vh;
+    }
+    .wrap {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    .card {
+      background: rgba(15, 23, 42, 0.96);
+      border: 1px solid rgba(148, 163, 184, 0.24);
+      border-radius: 22px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.45);
+      padding: 28px;
+    }
+    h1 {
+      margin: 0 0 12px 0;
+      color: #f9fafb;
+    }
+    .rules-box {
+      white-space: pre-wrap;
+      background: rgba(30, 41, 59, 0.82);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 16px;
+      padding: 18px;
+      line-height: 1.6;
+      margin: 18px 0;
+      color: #e5e7eb;
+    }
+    .message {
+      margin: 14px 0;
+      color: #cbd5e1;
+    }
+    .actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    button, a.button {
+      display: inline-block;
+      border: 0;
+      border-radius: 12px;
+      padding: 13px 18px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    #agreeButton {
+      background: #059669;
+      color: white;
+    }
+    #agreeButton:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+    a.button {
+      background: rgba(148, 163, 184, 0.16);
+      color: #e5e7eb;
+      border: 1px solid rgba(148, 163, 184, 0.24);
+    }
+    label {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      line-height: 1.4;
+      margin-bottom: 16px;
+    }
+    input[type="checkbox"] {
+      margin-top: 2px;
+      transform: scale(1.2);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1 id="rulesTitle">Rules and Regulations</h1>
+      <div id="versionText" class="message"></div>
+      <div id="statusMessage" class="message">Loading rules...</div>
+      <div id="rulesText" class="rules-box"></div>
 
+      <label>
+        <input id="agreeCheck" type="checkbox" />
+        <span>I have read and agree to the Rules and Regulations.</span>
+      </label>
+
+      <div class="actions">
+        <button id="agreeButton" disabled>I Agree</button>
+        <a class="button" href="/">Back</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const member = JSON.parse(localStorage.getItem("rangebookerMember") || "{}");
+    const statusMessage = document.getElementById("statusMessage");
+    const rulesTitle = document.getElementById("rulesTitle");
+    const versionText = document.getElementById("versionText");
+    const rulesText = document.getElementById("rulesText");
+    const agreeCheck = document.getElementById("agreeCheck");
+    const agreeButton = document.getElementById("agreeButton");
+
+    let loadedRules = null;
+
+    if (!member.id) {
+      window.location.href = "/login.html";
+    }
+
+    agreeCheck.addEventListener("change", () => {
+      agreeButton.disabled = !agreeCheck.checked || !loadedRules;
+    });
+
+    async function loadRules() {
+      try {
+        const response = await fetch("/api/GetRulesAndRegulations");
+        const data = await response.json();
+
+        if (!response.ok || !data.success || !data.rules) {
+          throw new Error(data.error || "Rules could not be loaded.");
+        }
+
+        loadedRules = data.rules;
+        rulesTitle.textContent = loadedRules.title || "Rules and Regulations";
+        versionText.textContent = loadedRules.version ? `Version: ${loadedRules.version}` : "";
+        rulesText.textContent = loadedRules.rulesText || "No rules text was found.";
+        statusMessage.textContent = "Please review the rules below.";
+        agreeButton.disabled = !agreeCheck.checked;
+      } catch (err) {
+        statusMessage.textContent = err.message;
+        agreeButton.disabled = true;
+      }
+    }
+
+    agreeButton.addEventListener("click", async () => {
+      if (!agreeCheck.checked || !member.id) {
+        return;
+      }
+
+      agreeButton.disabled = true;
+      statusMessage.textContent = "Saving acknowledgement...";
+
+      try {
+        const response = await fetch("/api/AcknowledgeRules", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ memberId: member.id })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || "Could not save acknowledgement.");
+        }
+
+        member.rulesAcknowledged = "Yes";
+        member.rulesAcceptedDate = new Date().toISOString();
+        localStorage.setItem("rangebookerMember", JSON.stringify(member));
+
+        window.location.href = "/calendar.html";
+      } catch (err) {
+        statusMessage.textContent = err.message;
+        agreeButton.disabled = false;
+      }
+    });
+
+    loadRules();
+  </script>
+</body>
+</html>
