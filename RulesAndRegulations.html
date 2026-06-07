@@ -105,79 +105,91 @@
     </div>
   </div>
 
-  <script>
-    const member = JSON.parse(localStorage.getItem("rangebookerMember") || "{}");
-    const statusMessage = document.getElementById("statusMessage");
-    const rulesTitle = document.getElementById("rulesTitle");
-    const versionText = document.getElementById("versionText");
-    const rulesText = document.getElementById("rulesText");
-    const agreeCheck = document.getElementById("agreeCheck");
-    const agreeButton = document.getElementById("agreeButton");
+<script>
+const member = JSON.parse(sessionStorage.getItem("rangebookerUser") || "{}");
 
-    let loadedRules = null;
+const statusMessage = document.getElementById("statusMessage");
+const rulesTitle = document.getElementById("rulesTitle");
+const versionText = document.getElementById("versionText");
+const rulesText = document.getElementById("rulesText");
+const agreeCheck = document.getElementById("agreeCheck");
+const agreeButton = document.getElementById("agreeButton");
 
-    if (!member.id) {
-      window.location.href = "/login.html";
+let loadedRules = null;
+
+if (!member.id) {
+  window.location.href = "/login.html";
+}
+
+agreeCheck.addEventListener("change", () => {
+  agreeButton.disabled = !agreeCheck.checked || !loadedRules;
+});
+
+async function loadRules() {
+  try {
+    const response = await fetch("/api/GetRulesAndRegulations");
+    const data = await response.json();
+
+    if (!response.ok || !data.success || !data.rules) {
+      throw new Error(data.error || "Rules could not be loaded.");
     }
 
-    agreeCheck.addEventListener("change", () => {
-      agreeButton.disabled = !agreeCheck.checked || !loadedRules;
+    loadedRules = data.rules;
+
+    rulesTitle.textContent = loadedRules.title || "Rules and Regulations";
+    versionText.textContent = loadedRules.version
+      ? `Version: ${loadedRules.version}`
+      : "";
+
+    rulesText.textContent =
+      loadedRules.rulesText || "No rules text was found.";
+
+    statusMessage.textContent = "Please review the rules below.";
+    agreeButton.disabled = !agreeCheck.checked;
+
+  } catch (err) {
+    statusMessage.textContent = err.message;
+    agreeButton.disabled = true;
+  }
+}
+
+agreeButton.addEventListener("click", async () => {
+  if (!agreeCheck.checked || !member.id) {
+    return;
+  }
+
+  agreeButton.disabled = true;
+  statusMessage.textContent = "Saving acknowledgement...";
+
+  try {
+    const response = await fetch("/api/AcknowledgeRules", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ memberId: member.id })
     });
 
-    async function loadRules() {
-      try {
-        const response = await fetch("/api/GetRulesAndRegulations");
-        const data = await response.json();
+    const data = await response.json();
 
-        if (!response.ok || !data.success || !data.rules) {
-          throw new Error(data.error || "Rules could not be loaded.");
-        }
-
-        loadedRules = data.rules;
-        rulesTitle.textContent = loadedRules.title || "Rules and Regulations";
-        versionText.textContent = loadedRules.version ? `Version: ${loadedRules.version}` : "";
-        rulesText.textContent = loadedRules.rulesText || "No rules text was found.";
-        statusMessage.textContent = "Please review the rules below.";
-        agreeButton.disabled = !agreeCheck.checked;
-      } catch (err) {
-        statusMessage.textContent = err.message;
-        agreeButton.disabled = true;
-      }
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || "Could not save acknowledgement.");
     }
 
-    agreeButton.addEventListener("click", async () => {
-      if (!agreeCheck.checked || !member.id) {
-        return;
-      }
+    member.rulesAcknowledged = "Yes";
+    member.rulesAcceptedDate = new Date().toISOString();
 
-      agreeButton.disabled = true;
-      statusMessage.textContent = "Saving acknowledgement...";
+    sessionStorage.setItem(
+      "rangebookerUser",
+      JSON.stringify(member)
+    );
 
-      try {
-        const response = await fetch("/api/AcknowledgeRules", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ memberId: member.id })
-        });
+    window.location.href = "/calendar.html";
 
-        const data = await response.json();
+  } catch (err) {
+    statusMessage.textContent = err.message;
+    agreeButton.disabled = false;
+  }
+});
 
-        if (!response.ok || !data.success) {
-          throw new Error(data.error || "Could not save acknowledgement.");
-        }
-
-        member.rulesAcknowledged = "Yes";
-        member.rulesAcceptedDate = new Date().toISOString();
-        localStorage.setItem("rangebookerMember", JSON.stringify(member));
-
-        window.location.href = "/calendar.html";
-      } catch (err) {
-        statusMessage.textContent = err.message;
-        agreeButton.disabled = false;
-      }
-    });
-
-    loadRules();
-  </script>
-</body>
+loadRules();
+</script></body>
 </html>
