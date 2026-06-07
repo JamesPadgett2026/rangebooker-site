@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -185,11 +186,7 @@
     <div class="member-layout">
 
       <div class="left-photo-box">
-
-        <div
-          id="photoLoading"
-          class="photo-loading"
-        >
+        <div id="photoLoading" class="photo-loading">
           Loading photo...
         </div>
 
@@ -197,7 +194,6 @@
           id="memberHomeLeftPhoto"
           alt="Member Home Photo"
         />
-
       </div>
 
       <div>
@@ -216,53 +212,32 @@
 
         <div class="actions">
 
-          <a
-            class="btn"
-            href="/calendar.html"
-          >
+          <a class="btn" href="/calendar.html">
             📅 View Calendar
           </a>
 
-          <a
-            class="btn"
-            href="/mystats.html"
-          >
+          <a class="btn" href="/mystats.html">
             📊 My Stats
           </a>
 
-          <a
-            class="btn"
-            href="/bulletinboard.html"
-          >
+          <a class="btn" href="/bulletinboard.html">
             📌 Bullet-Tin Board
           </a>
 
-          <a
-            class="btn"
-            href="/yardsale.html"
-          >
+          <a class="btn" href="/yardsale.html">
             🏷 Yard Sale
           </a>
 
-          <a
-            class="btn"
-            href="/mysettings.html"
-          >
+          <a class="btn" href="/mysettings.html">
             ⚙ My Settings
           </a>
 
         </div>
 
         <div class="footer">
-
-          <a
-            class="btn logout"
-            href="#"
-            onclick="logout()"
-          >
+          <a class="btn logout" href="#" onclick="logout(); return false;">
             <span>Logout</span>
           </a>
-
         </div>
 
       </div>
@@ -276,10 +251,18 @@
 const user = sessionStorage.getItem("rangebookerUser");
 
 if (!user) {
-  window.location.href = "login.html";
+  window.location.href = "/login.html";
 }
 
 const parsed = JSON.parse(user);
+
+if (
+  String(parsed.rulesAcknowledged || "")
+    .trim()
+    .toLowerCase() !== "yes"
+) {
+  window.location.href = "/RulesAndRegulations.html";
+}
 
 document.getElementById("welcome").innerText =
   "Welcome " +
@@ -288,92 +271,54 @@ document.getElementById("welcome").innerText =
   (parsed.lastName || "");
 
 async function getWebsitePhotos() {
-
   const response = await fetch("/api/GetWebsitePhotos");
-
   const data = await response.json();
 
-  if (
-    !data.success ||
-    !Array.isArray(data.photos)
-  ) {
+  if (!data.success || !Array.isArray(data.photos)) {
     return [];
   }
 
   return data.photos;
 }
 
-function findPhotoByName(
-  photos,
-  photoName
-) {
-
+function findPhotoByName(photos, photoName) {
   const wanted = String(photoName || "")
     .trim()
     .toLowerCase();
 
   return photos.find(p =>
-    String(
-      p.title ||
-      p.photoName ||
-      ""
-    )
+    String(p.title || p.photoName || "")
       .trim()
       .toLowerCase() === wanted
   );
 }
 
 async function loadPagePhotos() {
-
-  const img =
-    document.getElementById(
-      "memberHomeLeftPhoto"
-    );
-
-  const loading =
-    document.getElementById(
-      "photoLoading"
-    );
+  const img = document.getElementById("memberHomeLeftPhoto");
+  const loading = document.getElementById("photoLoading");
 
   try {
+    const photos = await getWebsitePhotos();
 
-    const photos =
-      await getWebsitePhotos();
+    const leftPhoto = findPhotoByName(
+      photos,
+      "MemberHomeLeftSide"
+    );
 
-    const leftPhoto =
-      findPhotoByName(
-        photos,
-        "MemberHomeLeftSide"
-      );
-
-    if (
-      leftPhoto &&
-      leftPhoto.image
-    ) {
-
+    if (leftPhoto && leftPhoto.image) {
       img.src = leftPhoto.image;
-
       img.style.display = "block";
-
       loading.style.display = "none";
-
     } else {
-
-      loading.innerText =
-        "Photo not found";
+      loading.innerText = "Photo not found";
     }
 
-    const bulletPhoto =
-      findPhotoByName(
-        photos,
-        "BulletMenuPhoto"
-      );
+    const bulletPhoto = findPhotoByName(
+      photos,
+      "BulletMenuPhoto"
+    );
 
-    if (
-      bulletPhoto &&
-      bulletPhoto.image
-    ) {
-
+    if (bulletPhoto && bulletPhoto.image) {
       document.documentElement.style.setProperty(
         "--bullet-menu-photo",
         `url("${bulletPhoto.image}")`
@@ -381,25 +326,14 @@ async function loadPagePhotos() {
     }
 
   } catch (err) {
-
-    console.error(
-      "Photo load failed:",
-      err
-    );
-
-    loading.innerText =
-      "Photo unavailable";
+    console.error("Photo load failed:", err);
+    loading.innerText = "Photo unavailable";
   }
 }
 
 function logout() {
-
-  sessionStorage.removeItem(
-    "rangebookerUser"
-  );
-
-  window.location.href =
-    "login.html";
+  sessionStorage.removeItem("rangebookerUser");
+  window.location.href = "/login.html";
 }
 
 loadPagePhotos();
@@ -407,3 +341,4 @@ loadPagePhotos();
 
 </body>
 </html>
+```
