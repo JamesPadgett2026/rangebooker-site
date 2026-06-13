@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,15 +7,14 @@
 <title>RangeBooker - Login</title>
 
 <style>
-  * { box-sizing: border-box; }
+  * {
+    box-sizing: border-box;
+  }
 
   body {
     margin: 0;
     font-family: Arial, sans-serif;
-    background:
-      linear-gradient(rgba(15,23,42,0.9), rgba(15,23,42,0.9)),
-      url("https://images.unsplash.com/photo-1548438294-1ad5d5f4f063?auto=format&fit=crop&w=1400&q=80")
-      center/cover no-repeat;
+    background: #0f172a;
     min-height: 100vh;
     display: flex;
     align-items: center;
@@ -73,14 +73,13 @@
     border-radius: 8px;
     cursor: pointer;
     font-size: 18px;
-    font-weight: normal;
   }
 
   .eye-button:hover {
     background: #f3f4f6;
   }
 
-  button.login-btn {
+  .login-btn {
     width: 100%;
     padding: 12px;
     background: #2563eb;
@@ -89,14 +88,14 @@
     border-radius: 8px;
     cursor: pointer;
     font-weight: bold;
-    transition: background 0.2s;
+    transition: background .2s;
   }
 
-  button.login-btn:hover {
+  .login-btn:hover {
     background: #1d4ed8;
   }
 
-  button.login-btn:disabled {
+  .login-btn:disabled {
     background: #93c5fd;
     cursor: not-allowed;
   }
@@ -107,8 +106,13 @@
     min-height: 20px;
   }
 
-  .error { color: #b91c1c; }
-  .success { color: #166534; }
+  .error {
+    color: #b91c1c;
+  }
+
+  .success {
+    color: #166534;
+  }
 
   .footer {
     margin-top: 16px;
@@ -131,12 +135,23 @@
 
 <div class="card">
   <div class="logo">🎯 RangeBooker</div>
-  <div class="subtitle">Reserve your time at the range with ease</div>
+  <div class="subtitle">
+    Reserve your time at the range with ease
+  </div>
 
-  <input id="email" placeholder="Email" autocomplete="email" />
+  <input
+    id="email"
+    placeholder="Email"
+    autocomplete="email"
+  />
 
   <div class="password-wrap">
-    <input id="password" type="password" placeholder="Password" autocomplete="current-password" />
+    <input
+      id="password"
+      type="password"
+      placeholder="Password"
+      autocomplete="current-password"
+    />
 
     <button
       id="eyeButton"
@@ -144,23 +159,33 @@
       type="button"
       title="Hold to show password"
       aria-label="Hold to show password"
-    >👁</button>
+    >
+      👁
+    </button>
   </div>
 
-  <button id="loginButton" class="login-btn" onclick="login()">
+  <button
+    id="loginButton"
+    class="login-btn"
+    onclick="login()"
+  >
     Login
   </button>
 
   <div id="msg" class="msg"></div>
 
   <div class="footer">
-    New here? <a href="createaccount.html">Create an account</a>
+    New here?
+    <a href="createaccount.html">Create an account</a>
   </div>
 </div>
 
 <script>
-const passwordInput = document.getElementById("password");
-const eyeButton = document.getElementById("eyeButton");
+const passwordInput =
+  document.getElementById("password");
+
+const eyeButton =
+  document.getElementById("eyeButton");
 
 function showPassword() {
   passwordInput.type = "text";
@@ -170,7 +195,7 @@ function hidePassword() {
   passwordInput.type = "password";
 }
 
-eyeButton.addEventListener("mousedown", function (e) {
+eyeButton.addEventListener("mousedown", e => {
   if (e.button === 0) {
     showPassword();
   }
@@ -179,7 +204,7 @@ eyeButton.addEventListener("mousedown", function (e) {
 eyeButton.addEventListener("mouseup", hidePassword);
 eyeButton.addEventListener("mouseleave", hidePassword);
 
-eyeButton.addEventListener("touchstart", function (e) {
+eyeButton.addEventListener("touchstart", e => {
   e.preventDefault();
   showPassword();
 });
@@ -188,7 +213,6 @@ eyeButton.addEventListener("touchend", hidePassword);
 eyeButton.addEventListener("touchcancel", hidePassword);
 
 async function login() {
-
   const email =
     document.getElementById("email")
       .value
@@ -210,7 +234,6 @@ async function login() {
   if (!email || !password) {
     msg.textContent =
       "Please enter your email and password.";
-
     msg.className = "msg error";
     return;
   }
@@ -219,7 +242,6 @@ async function login() {
   loginButton.disabled = true;
 
   try {
-
     const res = await fetch("/api/LoginMember", {
       method: "POST",
       headers: {
@@ -240,7 +262,6 @@ async function login() {
     }
 
     if (!res.ok || !data.success) {
-
       const message =
         data.message ||
         data.error ||
@@ -251,26 +272,18 @@ async function login() {
 
       if (
         lowerMessage.includes("membership") ||
-        lowerMessage.includes("not approved") ||
-        lowerMessage.includes("not been approved")
+        lowerMessage.includes("not approved")
       ) {
-
         msg.textContent =
           "Your membership request has not been approved yet. Please wait for admin approval.";
-
       } else if (
         lowerMessage.includes("inactive") ||
-        lowerMessage.includes("suspended") ||
-        lowerMessage.includes("active")
+        lowerMessage.includes("suspended")
       ) {
-
         msg.textContent =
           "Your account is inactive or suspended. Please contact an administrator.";
-
       } else {
-
         msg.textContent = message;
-
       }
 
       msg.className = "msg error";
@@ -283,7 +296,6 @@ async function login() {
       data.member;
 
     if (!user) {
-
       msg.textContent =
         "Login succeeded, but no user data was returned.";
 
@@ -301,28 +313,27 @@ async function login() {
     msg.className = "msg success";
 
     setTimeout(() => {
-
-      // Force password change if password contains "password"
-      if (password.toLowerCase().includes("password")) {
+      if (
+        password.toLowerCase().includes("password")
+      ) {
         window.location.href = "mysettings.html";
         return;
       }
 
-      window.location.href = "memberhome.html";
-
+      window.location.href =
+        "memberhome.html";
     }, 500);
 
   } catch (err) {
-
     msg.textContent =
       "Server error. Please try again.";
 
     msg.className = "msg error";
     loginButton.disabled = false;
-
   }
 }
 </script>
 
 </body>
 </html>
+```
