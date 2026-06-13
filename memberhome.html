@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -33,6 +34,28 @@
     border-radius: 16px;
     padding: 30px;
     box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  }
+
+  .back-row {
+    margin-bottom: 20px;
+  }
+
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #374151;
+    color: white;
+    text-decoration: none;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-weight: bold;
+    transition: background 0.2s, transform 0.15s;
+  }
+
+  .back-btn:hover {
+    background: #4b5563;
+    transform: translateY(-1px);
   }
 
   .member-layout {
@@ -182,6 +205,15 @@
 <div class="wrap">
   <div class="card">
 
+    <div class="back-row">
+      <a
+        class="back-btn"
+        href="https://rocklandrangesocialclub.com"
+      >
+        ← Back to Website
+      </a>
+    </div>
+
     <div class="member-layout">
 
       <div class="left-photo-box">
@@ -220,7 +252,7 @@
           </a>
 
           <a class="btn" href="/bulletinboard.html">
-            📌 Bullet-Tin Board
+            📌 Bulletin Board
           </a>
 
           <a class="btn" href="/yardsale.html">
@@ -234,7 +266,11 @@
         </div>
 
         <div class="footer">
-          <a class="btn logout" href="#" onclick="logout(); return false;">
+          <a
+            class="btn logout"
+            href="#"
+            onclick="logout(); return false;"
+          >
             <span>Logout</span>
           </a>
         </div>
@@ -293,8 +329,11 @@ function findPhotoByName(photos, photoName) {
 }
 
 async function loadPagePhotos() {
-  const img = document.getElementById("memberHomeLeftPhoto");
-  const loading = document.getElementById("photoLoading");
+  const img =
+    document.getElementById("memberHomeLeftPhoto");
+
+  const loading =
+    document.getElementById("photoLoading");
 
   try {
     const photos = await getWebsitePhotos();
