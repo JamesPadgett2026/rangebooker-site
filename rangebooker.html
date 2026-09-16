@@ -11,8 +11,17 @@
       margin: 0;
       padding: 0;
       background:
-        radial-gradient(circle at top, rgba(37, 99, 235, 0.25), transparent 35%),
-        linear-gradient(135deg, #020617 0%, #111827 55%, #0f172a 100%);
+        radial-gradient(
+          circle at top,
+          rgba(37, 99, 235, 0.25),
+          transparent 35%
+        ),
+        linear-gradient(
+          135deg,
+          #020617 0%,
+          #111827 55%,
+          #0f172a 100%
+        );
       color: #e5e7eb;
       min-height: 100vh;
       display: flex;
@@ -53,7 +62,9 @@
       color: #e5e7eb;
       font-size: 14px;
       font-weight: 700;
-      transition: background 0.15s ease, transform 0.15s ease;
+      transition:
+        background 0.15s ease,
+        transform 0.15s ease;
     }
 
     .back-button:hover {
@@ -92,7 +103,7 @@
 
     .button-grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(180px, 1fr));
+      grid-template-columns: repeat(2, minmax(180px, 1fr));
       gap: 16px;
       max-width: 760px;
       margin: 0 auto 32px auto;
@@ -103,14 +114,18 @@
       padding: 18px 20px;
       border-radius: 16px;
       text-decoration: none;
-      color: white;
+      color: #ffffff;
       font-size: 16px;
       font-weight: 700;
-      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+      transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease,
+        background 0.15s ease;
       box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
     }
 
     .nav-button:hover {
+      color: #ffffff;
       transform: translateY(-2px);
     }
 
@@ -138,9 +153,17 @@
       background: #6d28d9;
     }
 
+    .bulletin-button {
+      background: #d97706;
+    }
+
+    .bulletin-button:hover {
+      background: #b45309;
+    }
+
     .info-row {
       display: grid;
-      grid-template-columns: repeat(3, minmax(180px, 1fr));
+      grid-template-columns: repeat(2, minmax(180px, 1fr));
       gap: 16px;
       margin-top: 10px;
     }
@@ -173,7 +196,7 @@
       }
 
       .hero-card {
-        padding: 60px 22px 36px 22px;
+        padding: 60px 22px 36px;
       }
 
       h1 {
@@ -191,7 +214,7 @@
       }
 
       .hero-card {
-        padding: 58px 18px 28px 18px;
+        padding: 58px 18px 28px;
         border-radius: 18px;
       }
 
@@ -200,15 +223,15 @@
       }
 
       .nav-button {
-        font-size: 15px;
         padding: 16px 18px;
+        font-size: 15px;
       }
 
       .back-button {
         top: 14px;
         left: 14px;
-        font-size: 13px;
         padding: 8px 12px;
+        font-size: 13px;
       }
     }
   </style>
@@ -216,9 +239,11 @@
 
 <body>
   <div class="wrap">
-    <div class="hero-card">
-
-      <a class="back-button" href="https://www.rocklandrangesocialclub.com/">
+    <main class="hero-card">
+      <a
+        class="back-button"
+        href="https://www.rocklandrangesocialclub.com/"
+      >
         ← Back
       </a>
 
@@ -227,33 +252,74 @@
       <h1>Welcome to RangeBooker</h1>
 
       <div class="subtext">
-        Book range time, manage your account, and check calendar availability from one simple place.
+        Book range time, manage your account, check calendar
+        availability, and read the latest club announcements from one
+        simple place.
       </div>
 
-      <div class="button-grid">
-        <a class="nav-button calendar-button" href="/calendar.html">View Calendar</a>
-        <a class="nav-button login-button" href="/login.html">Login</a>
-        <a class="nav-button create-button" href="/createaccount.html">Create Account</a>
-      </div>
+      <nav class="button-grid" aria-label="RangeBooker navigation">
+        <a
+          class="nav-button calendar-button"
+          href="/calendar.html"
+        >
+          View Calendar
+        </a>
 
-      <div class="info-row">
-        <div class="info-card">
+        <a
+          class="nav-button login-button"
+          href="/login.html"
+        >
+          Login
+        </a>
+
+        <a
+          class="nav-button create-button"
+          href="/createaccount.html"
+        >
+          Create Account
+        </a>
+
+        <a
+          class="nav-button bulletin-button"
+          href="https://www.rocklandrangesocialclub.com/bulletinboard.html"
+        >
+          Bulletin Board
+        </a>
+      </nav>
+
+      <section class="info-row">
+        <article class="info-card">
           <h2>Calendar</h2>
-          <p>See available days and scheduled times for the range.</p>
-        </div>
+          <p>
+            See available days and scheduled times for the range.
+          </p>
+        </article>
 
-        <div class="info-card">
+        <article class="info-card">
           <h2>Login</h2>
-          <p>Sign in to access your member features and future booking tools.</p>
-        </div>
+          <p>
+            Sign in to access your member features and future booking
+            tools.
+          </p>
+        </article>
 
-        <div class="info-card">
+        <article class="info-card">
           <h2>Create Account</h2>
-          <p>Set up a new member account to get started with RangeBooker.</p>
-        </div>
-      </div>
+          <p>
+            Set up a new member account to get started with
+            RangeBooker.
+          </p>
+        </article>
 
-    </div>
+        <article class="info-card">
+          <h2>Bulletin Board</h2>
+          <p>
+            Read the latest club news, notices, and important
+            announcements.
+          </p>
+        </article>
+      </section>
+    </main>
   </div>
 </body>
 </html>
